@@ -570,16 +570,17 @@ end
 
 ----------------------------------------------------------------------------------------------------
 
-local event = require("event")
+local event    = require("event")
+local computer = require("computer")
 
 -- Sleeps "time" of seconds via "busy-wait" concept
 function event.sleep(time)
     checkArg(1, time, "number", "nil")
     
-    local deadline = computerUptime() + (time or 0)
+    local deadline = computer.uptime() + (time or 0)
     repeat
         event.pull(deadline - computerUptime())
-    until computerUptime() >= deadline
+    until computer.uptime() >= deadline
 end
 
 return { loaded = true }
