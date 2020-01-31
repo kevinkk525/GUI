@@ -943,7 +943,7 @@ function GUI.alert(...)
 	end
 	if #args == 0 then args[1] = "nil" end
 
-	local sign = image.fromString([[06030000FF 0000FF 00F7FF▟00F7FF▙0000FF 0000FF 0000FF 00F7FF▟F7FF00 F7FF00 00F7FF▙0000FF 00F7FF▟F7FF00CF7FF00yF7FF00kF7FF00a00F7FF▙]])
+	local sign = image.fromString([[06030000FF 0000FF 00F7FF▟00F7FF▙0000FF 0000FF 0000FF 00F7FF▟F7FF00 F7FF00 00F7FF▙0000FF 00F7FF▟F7FF00NF7FF00oF7FF00tF7FF00e00F7FF▙]])
 	local offset = 2
 	local lines = #args > 1 and "\"" .. table.concat(args, "\", \"") .. "\"" or args[1]
 	local bufferWidth, bufferHeight = buffer.getResolution()
@@ -4722,7 +4722,5 @@ function GUI.table(x, y, width, height, itemHeight, backgroundColor, headerBackg
 
 	return table
 end
-
-require("gui_extensions")
 
 return GUI
