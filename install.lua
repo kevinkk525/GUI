@@ -30,6 +30,10 @@ local files                     = {
         path = "/lib/filesystem_adv.lua"
     },
     {
+        url  = "https://raw.githubusercontent.com/kevinkk525/GUI/master/gui_extensions.lua",
+        path = "/lib/gui_extensions.lua"
+    },
+    {
         url  = "https://raw.githubusercontent.com/kevinkk525/GUI/master/GUI.lua",
         path = "/lib/GUI.lua"
     },

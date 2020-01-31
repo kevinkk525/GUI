@@ -560,7 +560,7 @@ local function pressableHandlePress(workspace, pressable, ...)
 
 	if not pressable.switchMode then
 		pressable.pressed = not pressable.pressed
-		os.sleep(GUI.BUTTON_PRESS_DURATION)
+		event.sleep(GUI.BUTTON_PRESS_DURATION)
 		
 		workspace:draw()
 	end
@@ -3048,7 +3048,7 @@ local function autoCompleteEventHandler(workspace, object, e1, e2, e3, e4, e5, .
 		workspace:draw()
 
 		if object.onItemSelected then
-			os.sleep(0.2)
+			event.sleep(0.2)
 			object.onItemSelected(workspace, object, e1, e2, e3, e4, e5, ...)
 		end
 	elseif e1 == "scroll" then
@@ -3839,7 +3839,7 @@ local function dropDownMenuItemEventHandler(workspace, object, e1, ...)
 
 				workspace:draw()
 			else
-				os.sleep(0.2)
+				event.sleep(0.2)
 
 				object.parent.parent.parent:remove()
 				
@@ -4723,51 +4723,6 @@ function GUI.table(x, y, width, height, itemHeight, backgroundColor, headerBackg
 	return table
 end
 
----------------------------------------------------------------------------------------------------
-
--- local workspace = GUI.workspace()
-
--- workspace:addChild(GUI.panel(1, 1, workspace.width, workspace.height, 0x2D2D2D))
-
--- local t = workspace:addChild(GUI.table(3, 2, 80, 30, 1,
--- 	0xF0F0F0,
--- 	0xFFFFFF,
--- 	0x000000
--- ))
-
--- t:addColumn("Name", GUI.SIZE_POLICY_RELATIVE, 0.6)
--- t:addColumn("Date", GUI.SIZE_POLICY_RELATIVE, 0.4)
--- t:addColumn("Size", GUI.SIZE_POLICY_ABSOLUTE, 16)
--- t:addColumn("Type", GUI.SIZE_POLICY_ABSOLUTE, 10)
-
--- local colors1 = {
--- 	defaultBackground = nil,
--- 	defaultText = 0x3C3C3C,
--- 	alternativeBackground = 0xE1E1E1,
--- 	alternativeText = 0x3C3C3C,
--- 	selectionBackground = 0xCC2440,
--- 	selectionText = 0xFFFFFF,
--- }
-
--- local colors2 = {}
--- for key, value in pairs(colors1) do
--- 	colors2[key] = value
--- end
--- colors2.defaultText, colors2.alternativeText = 0xA5A5A5, 0xA5A5A5
-
--- for i = 1, 10 do
--- 	t:addRow(
--- 		GUI.tableTextCell(colors1, "Ehehehe " .. i),
--- 		GUI.tableTextCell(colors2, "12.02.2018"),
--- 		GUI.tableTextCell(colors2, "114.23 KB"),
--- 		GUI.tableTextCell(colors2, ".lua")
--- 	)
--- end
-
--- workspace:draw()
--- workspace:start()
-
-
----------------------------------------------------------------------------------------------------
+require("gui_extensions")
 
 return GUI

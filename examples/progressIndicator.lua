@@ -10,7 +10,7 @@ workspace:addChild(GUI.panel(1, 1, workspace.width, workspace.height, 0x1E1E1E))
 local progressIndicator = workspace:addChild(GUI.progressIndicator(3, 2, 0x3C3C3C, 0x00B640, 0x99FF80))
 
 local function rawRequest(url, postData, headers, chunkHandler, chunkSize)
-    local pcallSuccess, requestHandle, requestReason = pcall(component.get("internet").request, url, postData, headers)
+    local pcallSuccess, requestHandle, requestReason = pcall(component.internet.request, url, postData, headers)
     if pcallSuccess then
         if requestHandle then
             while true do
