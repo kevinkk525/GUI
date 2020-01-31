@@ -92,5 +92,3 @@ function notice(workspace, timeout, message, callback, button_active, button_del
 end
 
 GUI.notice = notice
-
-return notice

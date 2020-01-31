@@ -3431,7 +3431,7 @@ function GUI.palette(x, y, startColor)
 
 	local favouritesContainer = palette:addChild(GUI.container(58, 24, 12, 1))
 	for i = 1, #favourites do
-		favouritesContainer:addChild(GUI.button(i * 2 - 1, 1, 2, 1, favourites[i], 0x0, 0x0, 0x0, " ")).onTouch = function(application)
+		favouritesContainer:addChild(GUI.button(i * 2 - 1, 1, 2, 1, favourites[i], 0x0, 0x0, 0x0, " ")).onTouch = function(workspace)
 			paletteSwitchColorFromHex(favourites[i])
 			paletteRefreshBigImage()
 			paletteUpdateCrestsCoordinates()
