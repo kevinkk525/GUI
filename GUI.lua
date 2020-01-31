@@ -370,7 +370,7 @@ end
 
 --------------------------------------------------------------------------------
 
-local function applicationStart(application, eventPullTimeout)
+local function workspaceStart(workspace, eventPullTimeout)
 	local animation, animationIndex, animationOnFinishMethodsIndex, animationOnFinishMethods, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32
 	
 	local function handle(isScreenEvent, currentContainer, intersectionX1, intersectionY1, intersectionX2, intersectionY2)
@@ -386,12 +386,12 @@ local function applicationStart(application, eventPullTimeout)
 
 			if isScreenEvent then
 				if currentContainer.eventHandler and not currentContainer.disabled then
-					currentContainer.eventHandler(application, currentContainer, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32)
+					currentContainer.eventHandler(workspace, currentContainer, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32)
 				end
 
 				currentContainerPassed = not currentContainer.passScreenEvents
 			elseif currentContainer.eventHandler then
-				currentContainer.eventHandler(application, currentContainer, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32)
+				currentContainer.eventHandler(workspace, currentContainer, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32)
 			end
 
 			for i = #currentContainer.children, 1, -1 do
@@ -425,15 +425,15 @@ local function applicationStart(application, eventPullTimeout)
 							return true
 						end
 					else
-						if application.needConsume then
-							application.needConsume = nil
+						if workspace.needConsume then
+							workspace.needConsume = nil
 							return true
 						end
 
 						if isScreenEvent then
 							if child:isPointInside(e3, e4) then
 								if child.eventHandler and not child.disabled then
-									child.eventHandler(application, child, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32)
+									child.eventHandler(workspace, child, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32)
 								end
 
 								if not child.passScreenEvents then
@@ -441,7 +441,7 @@ local function applicationStart(application, eventPullTimeout)
 								end
 							end
 						elseif child.eventHandler then
-							child.eventHandler(application, child, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32)
+							child.eventHandler(workspace, child, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32)
 						end
 					end
 				end
@@ -453,10 +453,10 @@ local function applicationStart(application, eventPullTimeout)
 		end
 	end
 
-	application.eventPullTimeout = eventPullTimeout
+	workspace.eventPullTimeout = eventPullTimeout
 
 	repeat
-		e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32 = event.pull(application.animations and 0 or application.eventPullTimeout)
+		e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32 = event.pull(workspace.animations and 0 or workspace.eventPullTimeout)
 		
 		handle(
 			e1 == "touch" or
@@ -464,24 +464,24 @@ local function applicationStart(application, eventPullTimeout)
 			e1 == "drop" or
 			e1 == "scroll" or
 			e1 == "double_touch",
-			application,
-			application.x,
-			application.y,
-			application.x + application.width - 1,
-			application.y + application.height - 1
+			workspace,
+			workspace.x,
+			workspace.y,
+			workspace.x + workspace.width - 1,
+			workspace.y + workspace.height - 1
 		)
 
-		if application.animations then
+		if workspace.animations then
 			animationIndex, animationOnFinishMethodsIndex, animationOnFinishMethods = 1, 1, {}
 			-- Продрачиваем анимации и вызываем обработчики кадров
-			while animationIndex <= #application.animations do
-				animation = application.animations[animationIndex]
+			while animationIndex <= #workspace.animations do
+				animation = workspace.animations[animationIndex]
 
 				if animation.removeLater then
-					table.remove(application.animations, animationIndex)
+					table.remove(workspace.animations, animationIndex)
 
-					if #application.animations == 0 then
-						application.animations = nil
+					if #workspace.animations == 0 then
+						workspace.animations = nil
 						break
 					end
 				else
@@ -506,40 +506,40 @@ local function applicationStart(application, eventPullTimeout)
 			end
 
 			-- По завершению продрочки отрисовываем изменения на экране
-			application:draw()
+			workspace:draw()
 
 			-- Вызываем поочередно все методы .onFinish
 			for i = 1, #animationOnFinishMethods do
 				animationOnFinishMethods[i].onFinish(animationOnFinishMethods[i])
 			end
 		end
-	until application.needClose
+	until workspace.needClose
 
-	application.needClose = nil
+	workspace.needClose = nil
 end
 
-local function applicationStop(application)
-	application.needClose = true
+local function workspaceStop(workspace)
+	workspace.needClose = true
 end
 
-local function applicationConsumeEvent(application)
-	application.needConsume = true
+local function workspaceConsumeEvent(workspace)
+	workspace.needConsume = true
 end
 
-local function applicationDraw(object, ...)
+local function workspaceDraw(object, ...)
 	containerDraw(object)
 	buffer.drawChanges(...)
 end
 
-function GUI.application(x, y, width, height)
-	local application = GUI.container(x or 1, y or 1, width or buffer.getWidth(), height or buffer.getHeight())
+function GUI.workspace(x, y, width, height)
+	local workspace = GUI.container(x or 1, y or 1, width or buffer.getWidth(), height or buffer.getHeight())
 	
-	application.draw = applicationDraw
-	application.start = applicationStart
-	application.stop = applicationStop
-	application.consumeEvent = applicationConsumeEvent
+	workspace.draw = workspaceDraw
+	workspace.start = workspaceStart
+	workspace.stop = workspaceStop
+	workspace.consumeEvent = workspaceConsumeEvent
 
-	return application
+	return workspace
 end
 
 --------------------------------------------------------------------------------
@@ -554,25 +554,25 @@ local function pressableDraw(pressable)
 	buffer.drawText(math.floor(pressable.x + pressable.width / 2 - unicode.len(pressable.text) / 2), math.floor(pressable.y + pressable.height / 2), text, pressable.text)
 end
 
-local function pressableHandlePress(application, pressable, ...)
+local function pressableHandlePress(workspace, pressable, ...)
 	pressable.pressed = not pressable.pressed
-	application:draw()
+	workspace:draw()
 
 	if not pressable.switchMode then
 		pressable.pressed = not pressable.pressed
 		os.sleep(GUI.BUTTON_PRESS_DURATION)
 		
-		application:draw()
+		workspace:draw()
 	end
 
 	if pressable.onTouch then
-		pressable.onTouch(application, pressable, ...)
+		pressable.onTouch(workspace, pressable, ...)
 	end
 end
 
-local function pressableEventHandler(application, pressable, e1, ...)
+local function pressableEventHandler(workspace, pressable, e1, ...)
 	if e1 == "touch" then
-		pressableHandlePress(application, pressable, e1, ...)
+		pressableHandlePress(workspace, pressable, e1, ...)
 	end
 end
 
@@ -628,13 +628,13 @@ local function buttonPlayAnimation(button, onFinish)
 	):start(button.animationDuration)
 end
 
-local function buttonPress(button, application, object, ...)
+local function buttonPress(button, workspace, object, ...)
 	if button.animated then
 		local eventData = {...}
 		
 		buttonPlayAnimation(button, function(animation)
 			if button.onTouch then
-				button.onTouch(application, button, table.unpack(eventData))
+				button.onTouch(workspace, button, table.unpack(eventData))
 			end
 
 			animation:remove()
@@ -646,13 +646,13 @@ local function buttonPress(button, application, object, ...)
 			end
 		end)
 	else
-		pressableHandlePress(application, button, ...)
+		pressableHandlePress(workspace, button, ...)
 	end
 end
 
-local function buttonEventHandler(application, button, e1, ...)
+local function buttonEventHandler(workspace, button, e1, ...)
 	if e1 == "touch" and (not button.animated or not button.animationStarted) then
-		button:press(application, button, e1, ...)
+		button:press(workspace, button, e1, ...)
 	end
 end
 
@@ -956,31 +956,31 @@ function GUI.alert(...)
 		height = #lines + 2
 	end
 
-	local application = GUI.application(1, math.floor(bufferHeight / 2 - height / 2), bufferWidth, height + offset * 2)
-	local oldPixels = buffer.copy(application.x, application.y, application.width, application.height)
+	local workspace = GUI.workspace(1, math.floor(bufferHeight / 2 - height / 2), bufferWidth, height + offset * 2)
+	local oldPixels = buffer.copy(workspace.x, workspace.y, workspace.width, workspace.height)
 
 	local x, y = math.floor(bufferWidth / 2 - width / 2), offset + 1
-	application:addChild(GUI.panel(1, 1, application.width, application.height, 0x1D1D1D))
-	application:addChild(GUI.image(x, y, sign))
-	application:addChild(GUI.textBox(x + image.getWidth(sign) + 2, y, textWidth, #lines, 0x1D1D1D, 0xE1E1E1, lines, 1, 0, 0)).eventHandler = nil
+	workspace:addChild(GUI.panel(1, 1, workspace.width, workspace.height, 0x1D1D1D))
+	workspace:addChild(GUI.image(x, y, sign))
+	workspace:addChild(GUI.textBox(x + image.getWidth(sign) + 2, y, textWidth, #lines, 0x1D1D1D, 0xE1E1E1, lines, 1, 0, 0)).eventHandler = nil
 	local buttonWidth = 10
-	local button = application:addChild(GUI.roundedButton(x + image.getWidth(sign) + textWidth - buttonWidth + 2, application.height - offset, buttonWidth, 1, 0x3366CC, 0xE1E1E1, 0xE1E1E1, 0x3366CC, "OK"))
+	local button = workspace:addChild(GUI.roundedButton(x + image.getWidth(sign) + textWidth - buttonWidth + 2, workspace.height - offset, buttonWidth, 1, 0x3366CC, 0xE1E1E1, 0xE1E1E1, 0x3366CC, "OK"))
 	
 	button.onTouch = function()
-		application:stop()
-		buffer.paste(application.x, application.y, oldPixels)
+		workspace:stop()
+		buffer.paste(workspace.x, workspace.y, oldPixels)
 		buffer.drawChanges()
 	end
 
-	application.eventHandler = function(application, object, e1, e2, e3, e4, ...)
+	workspace.eventHandler = function(workspace, object, e1, e2, e3, e4, ...)
 		if e1 == "key_down" and e4 == 28 then
 			button.animated = false
-			button:press(application, object, e1, e2, e3, e4, ...)
+			button:press(workspace, object, e1, e2, e3, e4, ...)
 		end
 	end
 
-	application:draw(true)
-	application:start()
+	workspace:draw(true)
+	workspace:start()
 end
 
 --------------------------------------------------------------------------------
@@ -1188,21 +1188,21 @@ local function colorSelectorDraw(colorSelector)
 	return colorSelector
 end
 
-local function colorSelectorEventHandler(application, object, e1, ...)
+local function colorSelectorEventHandler(workspace, object, e1, ...)
 	if e1 == "touch" then
 		local eventData = {...}
 		object.pressed = true
 
-		local palette = application:addChild(GUI.palette(1, 1, object.color))
-		palette.localX, palette.localY = math.floor(application.width / 2 - palette.width / 2), math.floor(application.height / 2 - palette.height / 2)
+		local palette = workspace:addChild(GUI.palette(1, 1, object.color))
+		palette.localX, palette.localY = math.floor(workspace.width / 2 - palette.width / 2), math.floor(workspace.height / 2 - palette.height / 2)
 
 		palette.cancelButton.onTouch = function()
 			object.pressed = false
 			palette:remove()
-			application:draw()
+			workspace:draw()
 
 			if object.onColorSelected then
-				object.onColorSelected(application, object, e1, table.unpack(eventData))
+				object.onColorSelected(workspace, object, e1, table.unpack(eventData))
 			end
 		end
 
@@ -1211,7 +1211,7 @@ local function colorSelectorEventHandler(application, object, e1, ...)
 			palette.cancelButton.onTouch()
 		end
 		
-		application:draw()
+		workspace:draw()
 	end
 end
 
@@ -1402,7 +1402,7 @@ local function sliderDraw(object)
 	return object
 end
 
-local function sliderEventHandler(application, object, e1, e2, e3, ...)
+local function sliderEventHandler(workspace, object, e1, e2, e3, ...)
 	if e1 == "touch" or e1 == "drag" then
 		local clickPosition = e3 - object.x
 
@@ -1414,10 +1414,10 @@ local function sliderEventHandler(application, object, e1, e2, e3, ...)
 			object.value = object.minimumValue + (clickPosition / object.width * (object.maximumValue - object.minimumValue))
 		end
 
-		application:draw()
+		workspace:draw()
 
 		if object.onValueChanged then
-			object.onValueChanged(application, object, e1, e2, e3, ...)
+			object.onValueChanged(workspace, object, e1, e2, e3, ...)
 		end
 	end
 end
@@ -1463,7 +1463,7 @@ local function switchSetState(switch, state)
 	return switch
 end
 
-local function switchEventHandler(application, switch, e1, ...)
+local function switchEventHandler(workspace, switch, e1, ...)
 	if e1 == "touch" then
 		local eventData = {...}
 
@@ -2081,12 +2081,12 @@ local function filesystemChooserSetMode(object, IOMode, filesystemMode)
 	object.filesystemMode = filesystemMode
 end
 
-local function filesystemChooserEventHandler(application, object, e1)
+local function filesystemChooserEventHandler(workspace, object, e1)
 	if e1 == "touch" then
 		object.pressed = true
-		application:draw()
+		workspace:draw()
 
-		local filesystemDialog = GUI.addFilesystemDialog(application, false, 50, math.floor(application.height * 0.8), object.submitButtonText, object.cancelButtonText, object.placeholderText, object.filesystemDialogPath)
+		local filesystemDialog = GUI.addFilesystemDialog(workspace, false, 50, math.floor(workspace.height * 0.8), object.submitButtonText, object.cancelButtonText, object.placeholderText, object.filesystemDialogPath)
 
 		for key in pairs(object.extensionFilters) do
 			filesystemDialog:addExtensionFilter(key)
@@ -2103,7 +2103,7 @@ local function filesystemChooserEventHandler(application, object, e1)
 		
 		filesystemDialog.onCancel = function()
 			object.pressed = false
-			application:draw()
+			workspace:draw()
 		end
 
 		filesystemDialog.onSubmit = function(path)
@@ -2175,24 +2175,24 @@ local function resizerDraw(object)
 	end
 end
 
-local function resizerEventHandler(application, object, e1, e2, e3, e4)
+local function resizerEventHandler(workspace, object, e1, e2, e3, e4)
 	if e1 == "touch" then
 		object.lastTouchX, object.lastTouchY = e3, e4
-		application:draw()
-	elseif e1 == "drag" and object.lastTouchX then		
+		workspace:draw()
+	elseif e1 == "drag" and object.lastTouchX then
 		if object.onResize then
 			object.onResize(e3 - object.lastTouchX, e4 - object.lastTouchY)
 		end
 		
 		object.lastTouchX, object.lastTouchY = e3, e4
-		application:draw()
+		workspace:draw()
 	elseif e1 == "drop" then
 		if object.onResizeFinished then
 			object.onResizeFinished()
 		end
 
 		object.lastTouchX, object.lastTouchY = nil, nil
-		application:draw()
+		workspace:draw()
 	end
 end
 
@@ -2274,7 +2274,7 @@ local function scrollBarDraw(scrollBar)
 	return scrollBar
 end
 
-local function scrollBarEventHandler(application, object, e1, e2, e3, e4, e5, ...)
+local function scrollBarEventHandler(workspace, object, e1, e2, e3, e4, e5, ...)
 	local newValue = object.value
 
 	if e1 == "touch" or e1 == "drag" then
@@ -2310,10 +2310,10 @@ local function scrollBarEventHandler(application, object, e1, e2, e3, e4, e5, ..
 	if e1 == "touch" or e1 == "drag" or e1 == "scroll" then
 		object.value = newValue
 		if object.onTouch then
-			object.onTouch(application, object, e1, e2, e3, e4, e5, ...)
+			object.onTouch(workspace, object, e1, e2, e3, e4, e5, ...)
 		end
 
-		application:draw()
+		workspace:draw()
 	end
 end
 
@@ -2392,7 +2392,7 @@ local function treeDraw(tree)
 	return tree
 end
 
-local function treeEventHandler(application, tree, e1, e2, e3, e4, e5, ...)
+local function treeEventHandler(workspace, tree, e1, e2, e3, e4, e5, ...)
 	if e1 == "touch" then
 		local i = e4 - tree.y + tree.fromItem
 		if tree.items[i] then
@@ -2428,18 +2428,18 @@ local function treeEventHandler(application, tree, e1, e2, e3, e4, e5, ...)
 				end
 			end
 
-			application:draw()
+			workspace:draw()
 		end
 	elseif e1 == "scroll" then
 		if e5 == 1 then
 			if tree.fromItem > 1 then
 				tree.fromItem = tree.fromItem - 1
-				application:draw()
+				workspace:draw()
 			end
 		else
 			if tree.fromItem < #tree.items then
 				tree.fromItem = tree.fromItem + 1
-				application:draw()
+				workspace:draw()
 			end
 		end
 	end
@@ -2677,7 +2677,7 @@ local function scrollToEndTextBox(object)
 	return object
 end
 
-local function textBoxScrollEventHandler(application, object, e1, e2, e3, e4, e5)
+local function textBoxScrollEventHandler(workspace, object, e1, e2, e3, e4, e5)
 	if e1 == "scroll" then
 		if e5 == 1 then
 			object:scrollUp()
@@ -2685,7 +2685,7 @@ local function textBoxScrollEventHandler(application, object, e1, e2, e3, e4, e5
 			object:scrollDown()
 		end
 
-		application:draw()
+		workspace:draw()
 	end
 end
 
@@ -2797,13 +2797,13 @@ local function inputDraw(input)
 	end
 end
 
-local function inputCursorBlink(application, input, state)
+local function inputCursorBlink(workspace, input, state)
 	input.cursorBlinkState = state
 	input.cursorBlinkUptime = computer.uptime()
-	application:draw()
+	workspace:draw()
 end
 
-local function inputStopInput(application, input)
+local function inputStopInput(workspace, input)
 	input.stopInputObject:remove()
 	input.focused = false
 
@@ -2817,10 +2817,10 @@ local function inputStopInput(application, input)
 	end
 	
 	if input.onInputFinished then
-		input.onInputFinished(application, input)
+		input.onInputFinished(workspace, input)
 	end
 
-	inputCursorBlink(application, input, false)
+	inputCursorBlink(workspace, input, false)
 end
 
 local function inputStartInput(input)
@@ -2843,17 +2843,17 @@ local function inputStartInput(input)
 	inputCursorBlink(input.firstParent, input, true)
 end
 
-local function inputEventHandler(application, input, e1, e2, e3, e4, e5, e6, ...)
+local function inputEventHandler(workspace, input, e1, e2, e3, e4, e5, e6, ...)
 	if e1 == "touch" or e1 == "drag" then
 		input:setCursorPosition(input.textCutFrom + e3 - input.x - input.textOffset)
 
 		if input.focused then
-			inputCursorBlink(application, input, true)
+			inputCursorBlink(workspace, input, true)
 		else
 			input:startInput()
 		end
 	elseif e1 == "key_down" and input.focused then
-		application:consumeEvent()
+		workspace:consumeEvent()
 
 		-- Return
 		if e4 == 28 then
@@ -2870,10 +2870,10 @@ local function inputEventHandler(application, input, e1, e2, e3, e4, e5, e6, ...
 				input.historyIndex = #input.history
 			end
 
-			inputStopInput(application, input)
+			inputStopInput(workspace, input)
 
 			if input.onKeyDown then
-				input.onKeyDown(application, input, e1, e2, e3, e4, e5, e6, ...)
+				input.onKeyDown(workspace, input, e1, e2, e3, e4, e5, e6, ...)
 			end
 
 			return
@@ -2927,18 +2927,18 @@ local function inputEventHandler(application, input, e1, e2, e3, e4, e5, e6, ...
 		end
 
 		if input.onKeyDown then
-			input.onKeyDown(application, input, e1, e2, e3, e4, e5, e6, ...)
+			input.onKeyDown(workspace, input, e1, e2, e3, e4, e5, e6, ...)
 		end
 
-		inputCursorBlink(application, input, true)
+		inputCursorBlink(workspace, input, true)
 	elseif e1 == "clipboard" and input.focused then
 		input.text = unicode.sub(input.text, 1, input.cursorPosition - 1) .. e3 .. unicode.sub(input.text, input.cursorPosition, -1)
 		input:setCursorPosition(input.cursorPosition + unicode.len(e3))
 		
-		inputCursorBlink(application, input, true)
-		application:consumeEvent()
+		inputCursorBlink(workspace, input, true)
+		workspace:consumeEvent()
 	elseif not e1 and input.focused and computer.uptime() - input.cursorBlinkUptime > input.cursorBlinkDelay then
-		inputCursorBlink(application, input, not input.cursorBlinkState)
+		inputCursorBlink(workspace, input, not input.cursorBlinkState)
 	end
 end
 
@@ -2978,12 +2978,12 @@ function GUI.input(x, y, width, height, backgroundColor, textColor, placeholderT
 	input.historyEnabled = false
 
 	input.stopInputObject = GUI.object(1, 1, 1, 1)
-	input.stopInputObject.eventHandler = function(application, object, e1, e2, e3, e4, ...)
+	input.stopInputObject.eventHandler = function(workspace, object, e1, e2, e3, e4, ...)
 		if e1 == "touch" or e1 == "drop" then
 			if input:isPointInside(e3, e4) then
-				input.eventHandler(application, input, e1, e2, e3, e4, ...)
+				input.eventHandler(workspace, input, e1, e2, e3, e4, ...)
 			else
-				inputStopInput(application, input)
+				inputStopInput(workspace, input)
 			end
 		end
 	end
@@ -3031,7 +3031,7 @@ local function autoCompleteDraw(object)
 	end
 end
 
-local function autoCompleteScroll(application, object, direction)
+local function autoCompleteScroll(workspace, object, direction)
 	if object.itemCount >= object.height then
 		object.fromItem = object.fromItem + direction
 		if object.fromItem < 1 then
@@ -3042,22 +3042,22 @@ local function autoCompleteScroll(application, object, direction)
 	end
 end
 
-local function autoCompleteEventHandler(application, object, e1, e2, e3, e4, e5, ...)
+local function autoCompleteEventHandler(workspace, object, e1, e2, e3, e4, e5, ...)
 	if e1 == "touch" then
 		object.selectedItem = e4 - object.y + object.fromItem
-		application:draw()
+		workspace:draw()
 
 		if object.onItemSelected then
 			os.sleep(0.2)
-			object.onItemSelected(application, object, e1, e2, e3, e4, e5, ...)
+			object.onItemSelected(workspace, object, e1, e2, e3, e4, e5, ...)
 		end
 	elseif e1 == "scroll" then
-		autoCompleteScroll(application, object, -e5)
-		application:draw()
+		autoCompleteScroll(workspace, object, -e5)
+		workspace:draw()
 	elseif e1 == "key_down" then
 		if e4 == 28 then
 			if object.onItemSelected then
-				object.onItemSelected(application, object, e1, e2, e3, e4, e5, ...)
+				object.onItemSelected(workspace, object, e1, e2, e3, e4, e5, ...)
 			end
 		elseif e4 == 200 then
 			object.selectedItem = object.selectedItem - 1
@@ -3066,10 +3066,10 @@ local function autoCompleteEventHandler(application, object, e1, e2, e3, e4, e5,
 			end
 
 			if object.selectedItem == object.fromItem - 1 then
-				autoCompleteScroll(application, object, -1)
+				autoCompleteScroll(workspace, object, -1)
 			end
 
-			application:draw()
+			workspace:draw()
 		elseif e4 == 208 then
 			object.selectedItem = object.selectedItem + 1
 			if object.selectedItem > object.itemCount then
@@ -3077,10 +3077,10 @@ local function autoCompleteEventHandler(application, object, e1, e2, e3, e4, e5,
 			end
 
 			if object.selectedItem == object.fromItem + object.height then
-				autoCompleteScroll(application, object, 1)
+				autoCompleteScroll(workspace, object, 1)
 			end
 			
-			application:draw()
+			workspace:draw()
 		end
 	end
 end
@@ -3246,17 +3246,17 @@ end
 --------------------------------------------------------------------------------
 
 local function paletteShow(palette)
-	local application = GUI.application()
+	local workspace = GUI.workspace()
 	
-	application:addChild(palette)
+	workspace:addChild(palette)
 
 	palette.submitButton.onTouch = function()
-		application:stop()
+		workspace:stop()
 	end
 	palette.cancelButton.onTouch = palette.submitButton.onTouch
 
-	application:draw()
-	application:start()	
+	workspace:draw()
+	workspace:start()
 
 	return palette.color.integer
 end
@@ -3435,11 +3435,11 @@ function GUI.palette(x, y, startColor)
 			paletteSwitchColorFromHex(favourites[i])
 			paletteRefreshBigImage()
 			paletteUpdateCrestsCoordinates()
-			application:draw()
+			workspace:draw()
 		end
 	end
 	
-	palette:addChild(GUI.button(58, 25, 12, 1, 0xFFFFFF, 0x4B4B4B, 0x2D2D2D, 0xFFFFFF, "+")).onTouch = function(application)
+	palette:addChild(GUI.button(58, 25, 12, 1, 0xFFFFFF, 0x4B4B4B, 0x2D2D2D, 0xFFFFFF, "+")).onTouch = function(workspace)
 		local favouriteExists = false
 		for i = 1, #favourites do
 			if favourites[i] == palette.color.integer then
@@ -3458,24 +3458,24 @@ function GUI.palette(x, y, startColor)
 			
 			table.toFile(GUI.PALETTE_CONFIG_PATH, favourites)
 
-			application:draw()
+			workspace:draw()
 		end
 	end
 
-	bigImage.eventHandler = function(application, object, e1, e2, e3, e4)
+	bigImage.eventHandler = function(workspace, object, e1, e2, e3, e4)
 		if e1 == "touch" or e1 == "drag" then
 			bigCrest.localX, bigCrest.localY = e3 - palette.x - 1, e4 - palette.y
 			paletteSwitchColorFromHex(select(3, component.gpu.get(e3, e4)))
-			application:draw()
+			workspace:draw()
 		end
 	end
 	
-	miniImage.eventHandler = function(application, object, e1, e2, e3, e4)
+	miniImage.eventHandler = function(workspace, object, e1, e2, e3, e4)
 		if e1 == "touch" or e1 == "drag" then
 			miniCrest.localY = e4 - palette.y + 1
 			paletteSwitchColorFromHsb((e4 - miniImage.y) * 360 / miniImage.height, palette.color.hsb.saturation, palette.color.hsb.brightness)
 			paletteRefreshBigImage()
-			application:draw()
+			workspace:draw()
 		end
 	end
 
@@ -3576,14 +3576,14 @@ local function listUpdate(list)
 	layoutUpdate(list)
 end
 
-local function listItemEventHandler(application, item, e1, ...)
+local function listItemEventHandler(workspace, item, e1, ...)
 	if e1 == "touch" or e1 == "drag" then
 		item.parent.selectedItem = item:indexOf()
 		item.parent:update()
-		application:draw()
+		workspace:draw()
 
 		if item.onTouch then
-			item.onTouch(application, item, e1, ...)
+			item.onTouch(workspace, item, e1, ...)
 		end
 	end
 end
@@ -3822,11 +3822,11 @@ local function dropDownMenuReleaseItems(menu)
 	return menu
 end
 
-local function dropDownMenuItemEventHandler(application, object, e1, ...)
+local function dropDownMenuItemEventHandler(workspace, object, e1, ...)
 	if e1 == "touch" then
 		if object.type == 1 and not object.pressed then
 			object.pressed = true
-			application:draw()
+			workspace:draw()
 
 			if object.subMenu then
 				object.parent.parent.parent:addChild(object.subMenu:releaseItems())
@@ -3837,7 +3837,7 @@ local function dropDownMenuItemEventHandler(application, object, e1, ...)
 					object.parent.parent:moveToFront()
 				end
 
-				application:draw()
+				workspace:draw()
 			else
 				os.sleep(0.2)
 
@@ -3854,7 +3854,7 @@ local function dropDownMenuItemEventHandler(application, object, e1, ...)
 					object.onTouch()
 				end
 
-				application:draw()
+				workspace:draw()
 			end
 		end
 	end
@@ -3926,7 +3926,7 @@ local function dropDownMenuAddSeparator(menu)
 	return item
 end
 
-local function dropDownMenuScrollDown(application, menu)
+local function dropDownMenuScrollDown(workspace, menu)
 	local limit, first = 1, menu.itemsContainer.children[1]
 
 	first.localY = first.localY + menu.scrollSpeed
@@ -3935,10 +3935,10 @@ local function dropDownMenuScrollDown(application, menu)
 	end
 
 	dropDownMenuReposition(menu)
-	application:draw()
+	workspace:draw()
 end
 
-local function dropDownMenuScrollUp(application, menu)
+local function dropDownMenuScrollUp(workspace, menu)
 	local limit, first = -(#menu.itemsContainer.children * menu.itemHeight - menu.height - 1), menu.itemsContainer.children[1]
 
 	first.localY = first.localY - menu.scrollSpeed
@@ -3947,25 +3947,25 @@ local function dropDownMenuScrollUp(application, menu)
 	end
 
 	dropDownMenuReposition(menu)
-	application:draw()
+	workspace:draw()
 end
 
-local function dropDownMenuEventHandler(application, menu, e1, e2, e3, e4, e5)
+local function dropDownMenuEventHandler(workspace, menu, e1, e2, e3, e4, e5)
 	if e1 == "scroll" then
 		if e5 == 1 then
-			dropDownMenuScrollDown(application, menu)
+			dropDownMenuScrollDown(workspace, menu)
 		else
-			dropDownMenuScrollUp(application, menu)
+			dropDownMenuScrollUp(workspace, menu)
 		end
 	end
 end
 
-local function dropDownMenuPrevButtonOnTouch(application, button)
-	dropDownMenuScrollDown(application, button.parent)
+local function dropDownMenuPrevButtonOnTouch(workspace, button)
+	dropDownMenuScrollDown(workspace, button.parent)
 end
 
-local function dropDownMenuNextButtonOnTouch(application, button)
-	dropDownMenuScrollUp(application, button.parent)
+local function dropDownMenuNextButtonOnTouch(workspace, button)
+	dropDownMenuScrollUp(workspace, button.parent)
 end
 
 local function dropDownMenuDraw(menu)
@@ -3974,7 +3974,7 @@ local function dropDownMenuDraw(menu)
 	containerDraw(menu)
 end
 
-local function dropDownMenuBackgroundObjectEventHandler(application, object, e1)
+local function dropDownMenuBackgroundObjectEventHandler(workspace, object, e1)
 	if e1 == "touch" then
 		for i = 2, #object.parent.children do
 			if object.parent.children[i].onMenuClosed then
@@ -3983,7 +3983,7 @@ local function dropDownMenuBackgroundObjectEventHandler(application, object, e1)
 		end
 
 		object.parent:remove()
-		application:draw()
+		workspace:draw()
 	end
 end
 
@@ -4152,13 +4152,13 @@ local function comboBoxClear(object)
 	return object
 end
 
-local function comboBoxEventHandler(application, object, e1, ...)
+local function comboBoxEventHandler(workspace, object, e1, ...)
 	if e1 == "touch" and #object.dropDownMenu.itemsContainer.children > 0 then
 		object.pressed = true
 		object.dropDownMenu.x, object.dropDownMenu.y, object.dropDownMenu.width = object.x, object.y + object.height, object.width
 		object.dropDownMenu:update()
-		dropDownMenuAdd(application, object.dropDownMenu)
-		application:draw()
+		dropDownMenuAdd(workspace, object.dropDownMenu)
+		workspace:draw()
 	end
 end
 
@@ -4260,7 +4260,7 @@ local function windowCheck(window, x, y)
 	end
 end
 
-local function windowEventHandler(application, window, e1, e2, e3, e4, ...)
+local function windowEventHandler(workspace, window, e1, e2, e3, e4, ...)
 	if window.movingEnabled then
 		if e1 == "touch" then
 			if not windowCheck(window, e3, e4) then
@@ -4271,10 +4271,10 @@ local function windowEventHandler(application, window, e1, e2, e3, e4, ...)
 				window:moveToFront()
 				
 				if window.onFocus then
-					window.onFocus(application, window, e1, e2, e3, e4, ...)
+					window.onFocus(workspace, window, e1, e2, e3, e4, ...)
 				end
 
-				application:draw()
+				workspace:draw()
 			end
 		elseif e1 == "drag" and window.lastTouchX and not windowCheck(window, e3, e4) then
 			local xOffset, yOffset = e3 - window.lastTouchX, e4 - window.lastTouchY
@@ -4282,7 +4282,7 @@ local function windowEventHandler(application, window, e1, e2, e3, e4, ...)
 				window.localX, window.localY = window.localX + xOffset, window.localY + yOffset
 				window.lastTouchX, window.lastTouchY = e3, e4
 				
-				application:draw()
+				workspace:draw()
 			end
 		elseif e1 == "drop" then
 			window.lastTouchX, window.lastTouchY = nil, nil
@@ -4432,11 +4432,11 @@ local function menuGetItem(menu, what)
 	end
 end
 
-local function menuContextMenuItemOnTouch(application, item)
+local function menuContextMenuItemOnTouch(workspace, item)
 	item.contextMenu.x, item.contextMenu.y = item.x, item.y + 1
-	dropDownMenuAdd(application, item.contextMenu)
+	dropDownMenuAdd(workspace, item.contextMenu)
 
-	application:draw()
+	workspace:draw()
 end
 
 local function menuAddContextMenuItem(menu, ...)
@@ -4595,7 +4595,7 @@ local function tableClear(self)
 	self.selectedRows, self.nextRowAlternative = {}, nil
 end
 
-function GUI.tableCellEventHandler(application, self, e1, e2, e3, e4, e5, ...)
+function GUI.tableCellEventHandler(workspace, self, e1, e2, e3, e4, e5, ...)
 	if e1 == "touch" or e1 == "drag" or e1 == "double_touch" then
 		local row = math.ceil(self:indexOf() / #self.parent.columnSizes)
 
@@ -4609,10 +4609,10 @@ function GUI.tableCellEventHandler(application, self, e1, e2, e3, e4, e5, ...)
 		tableUpdateSelection(self.parent)
 
 		if self.parent.onCellTouch then
-			self.parent.onCellTouch(application, self, e1, e2, e3, e4, e5, ...)
+			self.parent.onCellTouch(workspace, self, e1, e2, e3, e4, e5, ...)
 		end
 
-		application:draw()
+		workspace:draw()
 	end
 end
 
@@ -4666,7 +4666,7 @@ local function tableDraw(self)
 	layoutDraw(self)
 end
 
-function GUI.tableEventHandler(application, self, e1, e2, e3, e4, e5, ...)
+function GUI.tableEventHandler(workspace, self, e1, e2, e3, e4, e5, ...)
 	if e1 == "touch" then
 		local itemTouched = false
 		for i = 1, #self.children do
@@ -4677,7 +4677,7 @@ function GUI.tableEventHandler(application, self, e1, e2, e3, e4, e5, ...)
 		end
 
 		if not itemTouched then
-			self.onBackgroundTouch(application, self, e1, e2, e3, e4, e5, ...)
+			self.onBackgroundTouch(workspace, self, e1, e2, e3, e4, e5, ...)
 		end
 	elseif e1 == "scroll" then
 		local columnCount = #self.columnSizes
@@ -4695,7 +4695,7 @@ function GUI.tableEventHandler(application, self, e1, e2, e3, e4, e5, ...)
 			)
 		end
 
-		application:draw()
+		workspace:draw()
 	end
 end
 
@@ -4725,11 +4725,11 @@ end
 
 ---------------------------------------------------------------------------------------------------
 
--- local application = GUI.application()
+-- local workspace = GUI.workspace()
 
--- application:addChild(GUI.panel(1, 1, application.width, application.height, 0x2D2D2D))
+-- workspace:addChild(GUI.panel(1, 1, workspace.width, workspace.height, 0x2D2D2D))
 
--- local t = application:addChild(GUI.table(3, 2, 80, 30, 1,
+-- local t = workspace:addChild(GUI.table(3, 2, 80, 30, 1,
 -- 	0xF0F0F0,
 -- 	0xFFFFFF,
 -- 	0x000000
@@ -4764,8 +4764,8 @@ end
 -- 	)
 -- end
 
--- application:draw()
--- application:start()
+-- workspace:draw()
+-- workspace:start()
 
 
 ---------------------------------------------------------------------------------------------------
