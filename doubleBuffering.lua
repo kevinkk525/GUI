@@ -311,38 +311,43 @@ local function drawText(x, y, textColor, data, transparency)
 end
 
 local function drawImage(startX, startY, picture, blendForeground)
-    local bufferIndex, pictureIndex, imageWidth, backgrounds, foregrounds, alphas, symbols = bufferWidth * (startY - 1) + startX, 1, picture[1], picture[3], picture[4], picture[5], picture[6]
-    local bufferIndexStepOnReachOfImageWidth                                               = bufferWidth - imageWidth
-    
-    for y = startY, startY + picture[2] - 1 do
-        if y >= drawLimitY1 and y <= drawLimitY2 then
-            for x = startX, startX + imageWidth - 1 do
-                if x >= drawLimitX1 and x <= drawLimitX2 then
-                    if alphas[pictureIndex] == 0 then
-                        newFrameBackgrounds[bufferIndex], newFrameForegrounds[bufferIndex] = backgrounds[pictureIndex], foregrounds[pictureIndex]
-                    elseif alphas[pictureIndex] > 0 and alphas[pictureIndex] < 1 then
-                        newFrameBackgrounds[bufferIndex] = colorBlend(newFrameBackgrounds[bufferIndex], backgrounds[pictureIndex], alphas[pictureIndex])
-                        
-                        if blendForeground then
-                            newFrameForegrounds[bufferIndex] = colorBlend(newFrameForegrounds[bufferIndex], foregrounds[pictureIndex], alphas[pictureIndex])
-                        else
-                            newFrameForegrounds[bufferIndex] = foregrounds[pictureIndex]
-                        end
-                    elseif alphas[pictureIndex] == 1 and symbols[pictureIndex] ~= " " then
-                        newFrameForegrounds[bufferIndex] = foregrounds[pictureIndex]
-                    end
-                    
-                    newFrameSymbols[bufferIndex] = symbols[pictureIndex]
-                end
-                
-                bufferIndex, pictureIndex = bufferIndex + 1, pictureIndex + 1
-            end
-            
-            bufferIndex = bufferIndex + bufferIndexStepOnReachOfImageWidth
-        else
-            bufferIndex, pictureIndex = bufferIndex + bufferWidth, pictureIndex + imageWidth
-        end
-    end
+	local bufferIndex, pictureIndex, imageWidth, background, foreground, alpha, symbol = bufferWidth * (startY - 1) + startX, 3, picture[1]
+	local bufferIndexStepOnReachOfImageWidth = bufferWidth - imageWidth
+
+	for y = startY, startY + picture[2] - 1 do
+		if y >= drawLimitY1 and y <= drawLimitY2 then
+			for x = startX, startX + imageWidth - 1 do
+				if x >= drawLimitX1 and x <= drawLimitX2 then
+					alpha, symbol = picture[pictureIndex + 2], picture[pictureIndex + 3]
+					
+					-- If it's fully transparent pixel
+					if alpha == 0 then
+						newFrameBackgrounds[bufferIndex], newFrameForegrounds[bufferIndex] = picture[pictureIndex], picture[pictureIndex + 1]
+					-- If it has some transparency
+					elseif alpha > 0 and alpha < 1 then
+						newFrameBackgrounds[bufferIndex] = colorBlend(newFrameBackgrounds[bufferIndex], picture[pictureIndex], alpha)
+						
+						if blendForeground then
+							newFrameForegrounds[bufferIndex] = colorBlend(newFrameForegrounds[bufferIndex], picture[pictureIndex + 1], alpha)
+						else
+							newFrameForegrounds[bufferIndex] = picture[pictureIndex + 1]
+						end
+					-- If it's not transparent with whitespace
+					elseif symbol ~= " " then
+						newFrameForegrounds[bufferIndex] = picture[pictureIndex + 1]
+					end
+
+					newFrameSymbols[bufferIndex] = symbol
+				end
+
+				bufferIndex, pictureIndex = bufferIndex + 1, pictureIndex + 4
+			end
+
+			bufferIndex = bufferIndex + bufferIndexStepOnReachOfImageWidth
+		else
+			bufferIndex, pictureIndex = bufferIndex + bufferWidth, pictureIndex + imageWidth * 4
+		end
+	end
 end
 
 local function drawFrame(x, y, width, height, color)

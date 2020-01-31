@@ -1,25 +1,25 @@
-local color  = require("Color")
-local screen = require("Screen")
+local color  = require("color")
+local buffer = require("doubleBuffering")
 local GUI    = require("GUI")
 
 --------------------------------------------------------------------------------
 
--- Create a function that will draw your switch to screen buffer
+-- Create a function that will draw your switch to buffer buffer
 -- It's recommended to use local function because it will exists in memory as single copy for each switch
 local function switchDraw(switch)
     local bodyX = switch.x + switch.width - switch.bodyWidth
     -- Draw a switch text
-    screen.drawText(switch.x, switch.y, switch.colors.text, switch.text)
+    buffer.drawText(switch.x, switch.y, switch.colors.text, switch.text)
     -- Draw a background with passive color
-    screen.drawRectangle(bodyX, switch.y, switch.bodyWidth, 1, switch.colors.passive, 0x0, " ")
-    screen.drawText(bodyX + switch.bodyWidth, switch.y, switch.colors.passive, "⠆")
+    buffer.drawRectangle(bodyX, switch.y, switch.bodyWidth, 1, switch.colors.passive, 0x0, " ")
+    buffer.drawText(bodyX + switch.bodyWidth, switch.y, switch.colors.passive, "⠆")
     -- Draw a background with active color
-    screen.drawText(bodyX - 1, switch.y, switch.colors.active, "⠰")
-    screen.drawRectangle(bodyX, switch.y, switch.pipePosition - 1, 1, switch.colors.active, 0x0, " ")
+    buffer.drawText(bodyX - 1, switch.y, switch.colors.active, "⠰")
+    buffer.drawRectangle(bodyX, switch.y, switch.pipePosition - 1, 1, switch.colors.active, 0x0, " ")
     -- Draw a switch "pipe"
-    screen.drawText(bodyX + switch.pipePosition - 2, switch.y, switch.colors.pipe, "⠰")
-    screen.drawRectangle(bodyX + switch.pipePosition - 1, switch.y, 2, 1, switch.colors.pipe, 0x0, " ")
-    screen.drawText(bodyX + switch.pipePosition + 1, switch.y, switch.colors.pipe, "⠆")
+    buffer.drawText(bodyX + switch.pipePosition - 2, switch.y, switch.colors.pipe, "⠰")
+    buffer.drawRectangle(bodyX + switch.pipePosition - 1, switch.y, 2, 1, switch.colors.pipe, 0x0, " ")
+    buffer.drawText(bodyX + switch.pipePosition + 1, switch.y, switch.colors.pipe, "⠆")
 end
 
 -- Create a switch event handler that is called after clicking on it.

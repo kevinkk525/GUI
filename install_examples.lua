@@ -12,7 +12,7 @@ local url       = "https://raw.githubusercontent.com/kevinkk525/GUI/master/examp
 local path      = "/home/examples/"
 local files     = {}
 
-local filenames = { 'actionButtons.lua', 'animatedWidget.lua', 'brailleCanvas.lua', 'buttons.lua', 'chart.lua', 'codeView.lua', 'colorSelector.lua', 'combo.lua', 'contextMenu.lua', 'files.txt', 'filesystemChooser.lua', 'filesystemTree.lua', 'HDD.pic', 'image.lua', 'input.lua', 'label.lua', 'layout.lua', 'list.lua', 'menu.lua', 'palette.lua', 'panel.lua', 'progressBar.lua', 'progressIndicator.lua', 'resizer.lua', 'scrollBar.lua', 'slider.lua', 'switch.lua', 'text.lua', 'textBox.lua', 'window.lua', 'workspace.lua' }
+local filenames = { 'actionButtons.lua', 'animatedWidget.lua', 'brailleCanvas.lua', 'buttons.lua', 'chart.lua', 'codeView.lua', 'colorSelector.lua', 'combo.lua', 'contextMenu.lua', 'filesystemChooser.lua', 'filesystemTree.lua', 'HDD.pic', 'image.lua', 'input.lua', 'label.lua', 'layout.lua', 'list.lua', 'menu.lua', 'palette.lua', 'panel.lua', 'progressBar.lua', 'progressIndicator.lua', 'resizer.lua', 'scrollBar.lua', 'slider.lua', 'switch.lua', 'text.lua', 'textBox.lua', 'window.lua', 'workspace.lua' }
 for i, name in pairs(filenames) do
     files[#files + 1] = { ["url"] = url .. name, ["path"] = path .. name }
 end
