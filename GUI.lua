@@ -410,7 +410,7 @@ local function workspaceStart(workspace, eventPullTimeout)
 							child.y + child.height - 1
 						)
 
-						if 
+						if
 							newIntersectionX1 and
 							handle(
 								isScreenEvent,
@@ -1013,7 +1013,7 @@ local function codeViewDraw(codeView)
 			y = y + 1
 		else
 			break
-		end	
+		end
 	end
 	
 	if #codeView.selections > 0 then
@@ -1140,7 +1140,7 @@ local function codeViewDraw(codeView)
 	codeView:overrideDraw()
 end
 
-function GUI.codeView(x, y, width, height, fromSymbol, fromLine, maximumLineLength, selections, highlights, syntaxPatterns, syntaxColorScheme, syntaxHighlight, lines)	
+function GUI.codeView(x, y, width, height, fromSymbol, fromLine, maximumLineLength, selections, highlights, syntaxPatterns, syntaxColorScheme, syntaxHighlight, lines)
 	local codeView = GUI.container(x, y, width, height)
 	
 	codeView.passScreenEvents = false
@@ -1162,13 +1162,13 @@ function GUI.codeView(x, y, width, height, fromSymbol, fromLine, maximumLineLeng
 	codeView.draw = codeViewDraw
 
 	return codeView
-end 
+end
 
 --------------------------------------------------------------------------------
 
 local function colorSelectorDraw(colorSelector)
 	local overlayColor = colorSelector.color < 0x7FFFFF and 0xFFFFFF or 0x0
-		
+	
 	buffer.drawRectangle(
 		colorSelector.x,
 		colorSelector.y,
@@ -1225,7 +1225,7 @@ function GUI.colorSelector(x, y, width, height, color, text)
 	colorSelector.draw = colorSelectorDraw
 	
 	return colorSelector
-end 
+end
 
 --------------------------------------------------------------------------------
 
@@ -1272,7 +1272,7 @@ local function drawChart(object)
 	table.insert(yAxisValues, {y = object.y, value = stringValue})
 	yAxisValueMaxWidth = math.max(yAxisValueMaxWidth, unicode.len(stringValue))
 
-	local chartWidth = object.width - (object.showYAxisValues and yAxisValueMaxWidth + 2 or 0) 
+	local chartWidth = object.width - (object.showYAxisValues and yAxisValueMaxWidth + 2 or 0)
 	local chartX = object.x + object.width - chartWidth
 	for i = 1, #yAxisValues do
 		if object.showYAxisValues then
@@ -1374,7 +1374,7 @@ function GUI.switchAndLabel(x, y, width, switchWidth, activeColor, passiveColor,
 	switchAndLabel.switch = switchAndLabel:addChild(GUI.switch(1, 1, switchWidth, activeColor, passiveColor, pipeColor, switchState))
 	switchAndLabel.draw = switchAndLabelDraw
 
-	return switchAndLabel 
+	return switchAndLabel
 end
 
 --------------------------------------------------------------------------------
@@ -1472,7 +1472,7 @@ local function switchEventHandler(workspace, switch, e1, ...)
 			function(animation)
 				if switch.state then
 					switch.pipePosition = math.round(1 + animation.position * (switch.width - 2))
-				else	
+				else
 					switch.pipePosition = math.round(1 + (1 - animation.position) * (switch.width - 2))
 				end
 			end,
@@ -2339,7 +2339,7 @@ end
 
 --------------------------------------------------------------------------------
 
-local function treeDraw(tree)	
+local function treeDraw(tree)
 	local y, yEnd, showScrollBar = tree.y, tree.y + tree.height - 1, #tree.items > tree.height
 	local textLimit = tree.width - (showScrollBar and 1 or 0)
 
@@ -2447,7 +2447,7 @@ end
 
 local function treeAddItem(tree, name, definition, offset, expandable, disabled)
 	local item = {
-		name = name, 
+		name = name,
 		expandable = expandable,
 		offset = offset or 0,
 		definition = definition,
@@ -2519,7 +2519,7 @@ local function filesystemTreeUpdateFileListRecursively(tree, path, offset)
 
 	if tree.showMode == GUI.IO_MODE_BOTH or tree.showMode == GUI.IO_MODE_DIRECTORY then
 		for i = 1, #expandables do
-			tree:addItem(filesystem.name(expandables[i]):sub(1, -2), path .. expandables[i], offset, true)
+			tree:addItem(filesystem.name(expandables[i]), path .. expandables[i], offset, true)
 
 			if tree.expandedItems[path .. expandables[i]] then
 				filesystemTreeUpdateFileListRecursively(tree, path .. expandables[i], offset + 2)
@@ -2909,7 +2909,7 @@ local function inputEventHandler(workspace, input, e1, e2, e3, e4, e5, e6, ...)
 			end
 		elseif e4 == 203 then
 			input:setCursorPosition(input.cursorPosition - 1)
-		elseif e4 == 205 then	
+		elseif e4 == 205 then
 			input:setCursorPosition(input.cursorPosition + 1)
 		-- Backspace
 		elseif e4 == 14 then
@@ -3140,7 +3140,7 @@ function GUI.autoComplete(x, y, width, maximumHeight, backgroundColor, textColor
 		default = {
 			background = backgroundColor,
 			text = textColor,
-			textMatch = textMatchColor	
+			textMatch = textMatchColor
 		},
 		selected = {
 			background = backgroundSelectedColor,
@@ -4194,13 +4194,13 @@ function GUI.comboBox(x, y, width, itemSize, backgroundColor, textColor, arrowBa
 		1,
 		math.ceil(buffer.getHeight() * 0.5),
 		itemSize,
-		comboBox.colors.default.background, 
-		comboBox.colors.default.text, 
+		comboBox.colors.default.background,
+		comboBox.colors.default.text,
 		comboBox.colors.selected.background,
 		comboBox.colors.selected.text,
 		GUI.CONTEXT_MENU_DISABLED_COLOR,
 		GUI.CONTEXT_MENU_SEPARATOR_COLOR,
-		GUI.CONTEXT_MENU_BACKGROUND_TRANSPARENCY, 
+		GUI.CONTEXT_MENU_BACKGROUND_TRANSPARENCY,
 		GUI.CONTEXT_MENU_SHADOW_TRANSPARENCY
 	)
 

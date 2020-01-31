@@ -33,7 +33,7 @@ local function switchEventHandler(workspace, switch, event)
         -- As an animation frame handler you need a function that will set "pipe" position dependent of current animation position
         -- Remember that animation.position is always in [0.0; 1.0] range
         -- If switch state has a false value, you need to invert animation position to play it reversed visually
-                function(workspace, animation)
+                function(animation)
                     if switch.state then
                         switch.pipePosition = math.round(1 + animation.position * (switch.bodyWidth - 2))
                     else
@@ -41,7 +41,7 @@ local function switchEventHandler(workspace, switch, event)
                     end
                 end,
         -- Specify a function that is called after animation finishing
-                function(workspace, animation)
+                function(animation)
                     -- Remove animation object from switch
                     animation:remove()
                     -- You can also create callback-functions support like this

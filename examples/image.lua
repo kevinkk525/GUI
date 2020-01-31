@@ -1,4 +1,4 @@
-local image     = require("Image")
+local image     = require("image")
 local GUI       = require("GUI")
 
 --------------------------------------------------------------------------------
