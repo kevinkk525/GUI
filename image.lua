@@ -1,5 +1,6 @@
 local color               = require("color")
 local filesystem          = require("filesystem")
+local unicode             = require("unicode")
 
 --------------------------------------------------------------------------------
 
