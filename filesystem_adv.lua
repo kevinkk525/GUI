@@ -1,3 +1,5 @@
+local fs             = require("filesystem")
+
 --------------------------------------------------------------------------------
 
 local filesystem     = {
@@ -43,27 +45,7 @@ end
 
 --------------------------------------- Mounted filesystem support -----------------------------------------
 
-function filesystem.get(path)
-    checkArg(1, path, "string")
-    
-    for i = 1, #mountedProxies do
-        if path:sub(1, unicode.len(mountedProxies[i].path)) == mountedProxies[i].path then
-            return mountedProxies[i].proxy, unicode.sub(path, mountedProxies[i].path:len() + 1, -1)
-        end
-    end
-    
-    return BOOT_PROXY, path
-end
-
-function filesystem.mounts()
-    local key, value
-    return function()
-        key, value = next(mountedProxies, key)
-        if value then
-            return value.proxy, value.path
-        end
-    end
-end
+filesystem.get = fs.get
 
 --------------------------------------- I/O methods -----------------------------------------
 
@@ -378,76 +360,6 @@ function filesystem.remove(path)
     return proxy.remove(proxyPath)
 end
 
-function filesystem.list(path, sortingMethod)
-    local proxy, proxyPath = filesystem.get(path)
-    
-    local list, reason     = proxy.list(proxyPath)
-    if list then
-        -- Fullfill list with mounted paths if needed
-        for i = 1, #mountedProxies do
-            if path == filesystem.path(mountedProxies[i].path) then
-                table.insert(list, filesystem.name(mountedProxies[i].path))
-            end
-        end
-        
-        -- Applying sorting methods
-        if not sortingMethod or sortingMethod == filesystem.SORTING_NAME then
-            table.sort(list, function(a, b)
-                return unicode.lower(a) < unicode.lower(b)
-            end)
-            
-            return list
-        elseif sortingMethod == filesystem.SORTING_DATE then
-            table.sort(list, function(a, b)
-                return filesystem.lastModified(path .. a) > filesystem.lastModified(path .. b)
-            end)
-            
-            return list
-        elseif sortingMethod == filesystem.SORTING_TYPE then
-            -- Creating a map with "extension" = {file1, file2, ...} structure
-            local map, extension = {}
-            for i = 1, #list do
-                extension = filesystem.extension(list[i]) or "Z"
-                
-                -- If it's a directory without extension
-                if extension:sub(1, 1) ~= "." and filesystem.isDirectory(path .. list[i]) then
-                    extension = "."
-                end
-                
-                map[extension] = map[extension] or {}
-                table.insert(map[extension], list[i])
-            end
-            
-            -- Sorting lists for each extension
-            local extensions = {}
-            for key, value in pairs(map) do
-                table.sort(value, function(a, b)
-                    return unicode.lower(a) < unicode.lower(b)
-                end)
-                
-                table.insert(extensions, key)
-            end
-            
-            -- Sorting extensions
-            table.sort(extensions, function(a, b)
-                return unicode.lower(a) < unicode.lower(b)
-            end)
-            
-            -- Fullfilling final list
-            list = {}
-            for i = 1, #extensions do
-                for j = 1, #map[extensions[i]] do
-                    table.insert(list, map[extensions[i]][j])
-                end
-            end
-            
-            return list
-        end
-    end
-    
-    return list, reason
-end
-
 function filesystem.rename(fromPath, toPath)
     local fromProxy, fromProxyPath = filesystem.get(fromPath)
     local toProxy, toProxyPath     = filesystem.get(toPath)
@@ -582,7 +494,5 @@ end
 function filesystem.getProxy()
     return BOOT_PROXY
 end
-
---------------------------------------------------------------------------------
 
 return filesystem
