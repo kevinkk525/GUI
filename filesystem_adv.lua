@@ -43,51 +43,6 @@ end
 
 --------------------------------------- Mounted filesystem support -----------------------------------------
 
-function filesystem.mount(cyka, path)
-    if type(cyka) == "table" then
-        for i = 1, #mountedProxies do
-            if mountedProxies[i].path == path then
-                return false, "mount path has been taken by other mounted filesystem"
-            elseif mountedProxies[i].proxy == cyka then
-                return false, "proxy is already mounted"
-            end
-        end
-        
-        table.insert(mountedProxies, {
-            path  = path,
-            proxy = cyka
-        })
-        
-        return true
-    else
-        error("bad argument #1 (filesystem proxy expected, got " .. tostring(cyka) .. ")")
-    end
-end
-
-function filesystem.unmount(cyka)
-    if type(cyka) == "table" then
-        for i = 1, #mountedProxies do
-            if mountedProxies[i].proxy == cyka then
-                table.remove(mountedProxies, i)
-                return true
-            end
-        end
-        
-        return false, "specified proxy is not mounted"
-    elseif type(cyka) == "string" then
-        for i = 1, #mountedProxies do
-            if mountedProxies[i].proxy.address == cyka then
-                table.remove(mountedProxies, i)
-                return true
-            end
-        end
-        
-        return false, "specified proxy address is not mounted"
-    else
-        error("bad argument #1 (filesystem proxy or mounted path expected, got " .. tostring(cyka) .. ")")
-    end
-end
-
 function filesystem.get(path)
     checkArg(1, path, "string")
     
@@ -626,31 +581,6 @@ end
 
 function filesystem.getProxy()
     return BOOT_PROXY
-end
-
---------------------------------------- loadfile() and dofile() implementation -----------------------------------------
-
-function loadfile(path)
-    local data, reason = filesystem.read(path)
-    if data then
-        return load(data, "=" .. path)
-    end
-    
-    return nil, reason
-end
-
-function dofile(path, ...)
-    local result, reason = loadfile(path)
-    if result then
-        local data = { xpcall(result, debug.traceback, ...) }
-        if data[1] then
-            return table.unpack(data, 2)
-        else
-            error(data[2])
-        end
-    else
-        error(reason)
-    end
 end
 
 --------------------------------------------------------------------------------
