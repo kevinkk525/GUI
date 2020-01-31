@@ -579,7 +579,7 @@ function event.sleep(time)
     
     local deadline = computer.uptime() + (time or 0)
     repeat
-        event.pull(deadline - computerUptime())
+        event.pull(deadline - computer.uptime())
     until computer.uptime() >= deadline
 end
 
