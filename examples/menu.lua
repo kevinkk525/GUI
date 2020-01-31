@@ -12,7 +12,7 @@ menu:addItem("MineCode IDE", 0x0).onTouch = function()
     GUI.alert("Hello world!")
 end
 -- Add context menu and few items to it
-local contextMenu                         = menu:addContextMenu("File")
+local contextMenu                         = menu:addContextMenuItem("File")
 contextMenu:addItem("New")
 contextMenu:addItem("Open").onTouch = function()
     GUI.alert("Open item was pressed")
