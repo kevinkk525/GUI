@@ -1,5 +1,5 @@
-local color               = require("Color")
-local filesystem          = require("Filesystem")
+local color               = require("color")
+local filesystem          = require("filesystem")
 
 --------------------------------------------------------------------------------
 

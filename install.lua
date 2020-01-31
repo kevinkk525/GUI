@@ -10,19 +10,19 @@ local internet                  = component.internet
 -- Specify required files for downloading
 local files                     = {
     {
-        url  = "https://raw.githubusercontent.com/kevinkk525/GUI/master/AdvancedLua.lua",
+        url  = "https://raw.githubusercontent.com/kevinkk525/GUI/master/advancedLua.lua",
         path = "/lib/advancedLua.lua"
     },
     {
-        url  = "https://raw.githubusercontent.com/kevinkk525/GUI/master/Color.lua",
+        url  = "https://raw.githubusercontent.com/kevinkk525/GUI/master/color.lua",
         path = "/lib/color.lua"
     },
     {
-        url  = "https://raw.githubusercontent.com/kevinkk525/GUI/master/Image.lua",
+        url  = "https://raw.githubusercontent.com/kevinkk525/GUI/master/image.lua",
         path = "/lib/image.lua"
     },
     {
-        url  = "https://raw.githubusercontent.com/kevinkk525/GUI/master/DoubleBuffering.lua",
+        url  = "https://raw.githubusercontent.com/kevinkk525/GUI/master/doubleBuffering.lua",
         path = "/lib/doubleBuffering.lua"
     },
     {
