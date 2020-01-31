@@ -1,6 +1,3 @@
-local paths          = require("Paths")
-local event          = require("Event")
-
 --------------------------------------------------------------------------------
 
 local filesystem     = {
@@ -655,22 +652,6 @@ function dofile(path, ...)
         error(reason)
     end
 end
-
---------------------------------------------------------------------------------
-
--- Mount all existing filesystem components
-for address in component.list("filesystem") do
-    filesystem.mount(component.proxy(address), paths.system.mounts .. address .. "/")
-end
-
--- Automatically mount/unmount filesystem components
-event.addHandler(function(signal, address, type)
-    if signal == "component_added" and type == "filesystem" then
-        filesystem.mount(component.proxy(address), paths.system.mounts .. address .. "/")
-    elseif signal == "component_removed" and type == "filesystem" then
-        filesystem.unmount(address)
-    end
-end)
 
 --------------------------------------------------------------------------------
 
