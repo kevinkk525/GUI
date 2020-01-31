@@ -26,6 +26,10 @@ local files                     = {
         path = "/lib/doubleBuffering.lua"
     },
     {
+        url  = "https://raw.githubusercontent.com/kevinkk525/GUI/master/filesystem_adv.lua",
+        path = "/lib/filesystem_adv.lua"
+    },
+    {
         url  = "https://raw.githubusercontent.com/kevinkk525/GUI/master/GUI.lua",
         path = "/lib/GUI.lua"
     },
