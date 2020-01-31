@@ -294,7 +294,7 @@ end
 
 function filesystem.open(path, mode)
     local proxy, proxyPath = filesystem.get(path)
-    local result, reason   = proxy.open(proxyPath, mode)
+    local result, reason   = proxy.open(path, mode)
     if result then
         local handle = {
             proxy    = proxy,
