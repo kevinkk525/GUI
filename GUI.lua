@@ -37,7 +37,7 @@ local GUI = {
 	SWITCH_ANIMATION_DURATION = 0.3,
 	FILESYSTEM_DIALOG_ANIMATION_DURATION = 0.5,
 	
-	CONTEXT_MENU_SEPARATOR_COLOR = 0x878787,
+	CONTEXT_MENU_SEPARATOR_COLOR = 0xA5A5A5,
 	CONTEXT_MENU_DEFAULT_TEXT_COLOR = 0x2D2D2D,
 	CONTEXT_MENU_DEFAULT_BACKGROUND_COLOR = 0xFFFFFF,
 	CONTEXT_MENU_PRESSED_BACKGROUND_COLOR = 0x3366CC,
@@ -163,6 +163,14 @@ end
 
 --------------------------------------------------------------------------------
 
+local function objectIsPointInside(object, x, y)
+	return
+		x >= object.x and
+		x < object.x + object.width and
+		y >= object.y and
+		y < object.y + object.height
+end
+
 local function objectDraw(object)
 	return object
 end
@@ -173,6 +181,7 @@ function GUI.object(x, y, width, height)
 		y = y,
 		width = width,
 		height = height,
+		isPointInside = objectIsPointInside,
 		draw = objectDraw
 	}
 end
@@ -311,7 +320,7 @@ local function getRectangleIntersection(R1X1, R1Y1, R1X2, R1Y2, R2X1, R2Y1, R2X2
 	end
 end
 
-function containerDraw(container)
+local function containerDraw(container)
 	local R1X1, R1Y1, R1X2, R1Y2, child = buffer.getDrawLimit()
 	local intersectionX1, intersectionY1, intersectionX2, intersectionY2 = getRectangleIntersection(
 		R1X1,
@@ -422,12 +431,7 @@ local function applicationStart(application, eventPullTimeout)
 						end
 
 						if isScreenEvent then
-							if 
-								e3 >= child.x and
-								e3 <= child.x + child.width - 1 and
-								e4 >= child.y and
-								e4 <= child.y + child.height - 1
-							then
+							if child:isPointInside(e3, e4) then
 								if child.eventHandler and not child.disabled then
 									child.eventHandler(application, child, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32)
 								end
@@ -490,8 +494,10 @@ local function applicationStart(application, eventPullTimeout)
 							animation.position, animation.started = 1, false
 							animation.frameHandler(animation)
 							
-							animationOnFinishMethods[animationOnFinishMethodsIndex] = animation
-							animationOnFinishMethodsIndex = animationOnFinishMethodsIndex + 1
+							if animation.onFinish then
+								animationOnFinishMethods[animationOnFinishMethodsIndex] = animation
+								animationOnFinishMethodsIndex = animationOnFinishMethodsIndex + 1
+							end
 						end
 					end
 
@@ -852,8 +858,10 @@ end
 
 function GUI.image(x, y, image)
 	local object = GUI.object(x, y, image[1], image[2])
+
 	object.image = image
 	object.draw = drawImage
+
 	return object
 end
 
@@ -978,58 +986,65 @@ end
 --------------------------------------------------------------------------------
 
 local function codeViewDraw(codeView)
-	local toLine, colorScheme, patterns = codeView.fromLine + codeView.height - 1, codeView.syntaxColorScheme, codeView.syntaxPatterns
+	local y, toLine, colorScheme, patterns = codeView.y, codeView.fromLine + codeView.height - 1, codeView.syntaxColorScheme, codeView.syntaxPatterns
+	
 	-- Line numbers bar and code area
 	codeView.lineNumbersWidth = unicode.len(tostring(toLine)) + 2
 	codeView.codeAreaPosition = codeView.x + codeView.lineNumbersWidth
 	codeView.codeAreaWidth = codeView.width - codeView.lineNumbersWidth
-	-- Line numbers 
-	buffer.drawRectangle(codeView.x, codeView.y, codeView.lineNumbersWidth, codeView.height, colorScheme.lineNumbersBackground, colorScheme.lineNumbersText, " ")	
+	
+	-- Line numbers
+	buffer.drawRectangle(codeView.x, y, codeView.lineNumbersWidth, codeView.height, colorScheme.lineNumbersBackground, colorScheme.lineNumbersText, " ")
 	-- Background
-	buffer.drawRectangle(codeView.codeAreaPosition, codeView.y, codeView.codeAreaWidth, codeView.height, colorScheme.background, colorScheme.text, " ")
+	buffer.drawRectangle(codeView.codeAreaPosition, y, codeView.codeAreaWidth, codeView.height, colorScheme.background, colorScheme.text, " ")
+	
 	-- Line numbers texts
-	local y = codeView.y
+	local text
 	for line = codeView.fromLine, toLine do
 		if codeView.lines[line] then
-			local text = tostring(line)
+			text = line .. ""
 			if codeView.highlights[line] then
 				buffer.drawRectangle(codeView.x, y, codeView.lineNumbersWidth, 1, codeView.highlights[line], colorScheme.text, " ", 0.3)
 				buffer.drawRectangle(codeView.codeAreaPosition, y, codeView.codeAreaWidth, 1, codeView.highlights[line], colorScheme.text, " ")
 			end
+
 			buffer.drawText(codeView.codeAreaPosition - unicode.len(text) - 1, y, colorScheme.lineNumbersText, text)
+			
 			y = y + 1
 		else
 			break
 		end	
 	end
-
-	local function drawUpperSelection(y, selectionIndex)
-		buffer.drawRectangle(
-			codeView.codeAreaPosition + codeView.selections[selectionIndex].from.symbol - codeView.fromSymbol + 1,
-			y + codeView.selections[selectionIndex].from.line - codeView.fromLine,
-			codeView.codeAreaWidth - codeView.selections[selectionIndex].from.symbol + codeView.fromSymbol - 1,
-			1,
-			codeView.selections[selectionIndex].color or colorScheme.selection, colorScheme.text, " "
-		)
-	end
-
-	local function drawLowerSelection(y, selectionIndex)
-		buffer.drawRectangle(
-			codeView.codeAreaPosition,
-			y + codeView.selections[selectionIndex].from.line - codeView.fromLine,
-			codeView.selections[selectionIndex].to.symbol - codeView.fromSymbol + 2,
-			1,
-			codeView.selections[selectionIndex].color or colorScheme.selection, colorScheme.text, " "
-		)
-	end
-
-	local oldDrawLimitX1, oldDrawLimitY1, oldDrawLimitX2, oldDrawLimitY2 = buffer.getDrawLimit()
-	buffer.setDrawLimit(codeView.codeAreaPosition, codeView.y, codeView.codeAreaPosition + codeView.codeAreaWidth - 1, codeView.y + codeView.height - 1)
-
+	
 	if #codeView.selections > 0 then
+		local function drawUpperSelection(y, selectionIndex)
+			buffer.drawRectangle(
+				math.max(codeView.codeAreaPosition, codeView.codeAreaPosition + codeView.selections[selectionIndex].from.symbol - codeView.fromSymbol + 1),
+				y + codeView.selections[selectionIndex].from.line - codeView.fromLine,
+				codeView.codeAreaWidth - codeView.selections[selectionIndex].from.symbol + codeView.fromSymbol - 1,
+				1,
+				codeView.selections[selectionIndex].color or colorScheme.selection,
+				colorScheme.text,
+				" "
+			)
+		end
+
+		local function drawLowerSelection(y, selectionIndex)
+			buffer.drawRectangle(
+				codeView.codeAreaPosition,
+				y + codeView.selections[selectionIndex].from.line - codeView.fromLine,
+				codeView.selections[selectionIndex].to.symbol - codeView.fromSymbol + 2,
+				1,
+				codeView.selections[selectionIndex].color or colorScheme.selection,
+				colorScheme.text,
+				" "
+			)
+		end
+
 		for selectionIndex = 1, #codeView.selections do
 			y = codeView.y
 			local dy = codeView.selections[selectionIndex].to.line - codeView.selections[selectionIndex].from.line
+			
 			if dy == 0 then
 				buffer.drawRectangle(
 					codeView.codeAreaPosition + codeView.selections[selectionIndex].from.symbol - codeView.fromSymbol + 1,
@@ -1039,12 +1054,26 @@ local function codeViewDraw(codeView)
 					codeView.selections[selectionIndex].color or colorScheme.selection, colorScheme.text, " "
 				)
 			elseif dy == 1 then
-				drawUpperSelection(y, selectionIndex); y = y + 1
+				drawUpperSelection(y, selectionIndex)
+				y = y + 1
+
 				drawLowerSelection(y, selectionIndex)
 			else
-				drawUpperSelection(y, selectionIndex); y = y + 1
+				drawUpperSelection(y, selectionIndex)
+				y = y + 1
+				
 				for i = 1, dy - 1 do
-					buffer.drawRectangle(codeView.codeAreaPosition, y + codeView.selections[selectionIndex].from.line - codeView.fromLine, codeView.codeAreaWidth, 1, codeView.selections[selectionIndex].color or colorScheme.selection, colorScheme.text, " "); y = y + 1
+					buffer.drawRectangle(
+						codeView.codeAreaPosition,
+						y + codeView.selections[selectionIndex].from.line - codeView.fromLine,
+						codeView.codeAreaWidth,
+						1,
+						codeView.selections[selectionIndex].color or colorScheme.selection,
+						colorScheme.text,
+						" "
+					)
+
+					y = y + 1
 				end
 
 				drawLowerSelection(y, selectionIndex)
@@ -1054,14 +1083,12 @@ local function codeViewDraw(codeView)
 
 	-- Code strings
 	y = codeView.y
-	buffer.setDrawLimit(codeView.codeAreaPosition + 1, y, codeView.codeAreaPosition + codeView.codeAreaWidth - 2, y + codeView.height - 1)
-	
 	for i = codeView.fromLine, toLine do
 		if codeView.lines[i] then
 			if codeView.syntaxHighlight then
-				GUI.highlightString(codeView.codeAreaPosition + 1,
+				GUI.highlightString(
+					codeView.codeAreaPosition + 1,
 					y,
-					codeView.codeAreaWidth - 2,
 					codeView.fromSymbol,
 					codeView.indentationWidth,
 					patterns,
@@ -1069,7 +1096,16 @@ local function codeViewDraw(codeView)
 					codeView.lines[i]
 				)
 			else
-				buffer.drawText(codeView.codeAreaPosition - codeView.fromSymbol + 2, y, colorScheme.text, codeView.lines[i])
+				buffer.drawText(
+					codeView.codeAreaPosition + 1,
+					y,
+					colorScheme.text,
+					unicode.sub(
+						codeView.lines[i],
+						codeView.fromSymbol,
+						codeView.fromSymbol + codeView.codeAreaWidth - 3
+					)
+				)
 			end
 
 			y = y + 1
@@ -1078,8 +1114,7 @@ local function codeViewDraw(codeView)
 		end
 	end
 
-	buffer.setDrawLimit(oldDrawLimitX1, oldDrawLimitY1, oldDrawLimitX2, oldDrawLimitY2)
-
+	-- Scrollbars
 	if #codeView.lines > codeView.height then
 		codeView.verticalScrollBar.colors.background, codeView.verticalScrollBar.colors.foreground = colorScheme.scrollBarBackground, colorScheme.scrollBarForeground
 		codeView.verticalScrollBar.minimumValue, codeView.verticalScrollBar.maximumValue, codeView.verticalScrollBar.value, codeView.verticalScrollBar.shownValueCount = 1, #codeView.lines, codeView.fromLine, codeView.height
@@ -2484,7 +2519,7 @@ local function filesystemTreeUpdateFileListRecursively(tree, path, offset)
 
 	if tree.showMode == GUI.IO_MODE_BOTH or tree.showMode == GUI.IO_MODE_DIRECTORY then
 		for i = 1, #expandables do
-			tree:addItem(filesystem.name(expandables[i]), path .. expandables[i], offset, true)
+			tree:addItem(filesystem.name(expandables[i]):sub(1, -2), path .. expandables[i], offset, true)
 
 			if tree.expandedItems[path .. expandables[i]] then
 				filesystemTreeUpdateFileListRecursively(tree, path .. expandables[i], offset + 2)
@@ -2570,14 +2605,14 @@ local function textBoxDraw(object)
 	end
 
 	local x, y = nil, object.y + object.offset.vertical
-	local lineType, text, textColor
+	local lineType, line, textColor
 	for i = object.currentLine, object.currentLine + object.textHeight - 1 do
 		if object.linesCopy[i] then
 			lineType = type(object.linesCopy[i])
 			if lineType == "string" then
-				text, textColor = string.limit(object.linesCopy[i], object.textWidth), object.colors.text
+				line, textColor = string.limit(object.linesCopy[i], object.textWidth), object.colors.text
 			elseif lineType == "table" then
-				text, textColor = string.limit(object.linesCopy[i].text, object.textWidth), object.linesCopy[i].color
+				line, textColor = string.limit(object.linesCopy[i].text, object.textWidth), object.linesCopy[i].color
 			else
 				error("Unknown TextBox line type: " .. tostring(lineType))
 			end
@@ -2589,11 +2624,11 @@ local function textBoxDraw(object)
 				1,
 				object.horizontalAlignment,
 				object.verticalAlignment,
-				unicode.len(text),
+				unicode.len(line),
 				1
 			)
 
-			buffer.drawText(math.floor(x), y, textColor, text)
+			buffer.drawText(math.floor(x), y, textColor, line)
 			y = y + 1
 		else
 			break
@@ -2800,7 +2835,7 @@ local function inputStartInput(input)
 		input.text = ""
 	end
 	
-	input:setCursorPosition(unicode.len(input.text) + 1)
+	input:setCursorPosition(input.cursorPosition)
 
 	input.stopInputObject.width, input.stopInputObject.height = input.firstParent.width, input.firstParent.height
 	input.firstParent:addChild(input.stopInputObject)
@@ -2808,10 +2843,11 @@ local function inputStartInput(input)
 	inputCursorBlink(input.firstParent, input, true)
 end
 
-local function inputEventHandler(application, input, e1, e2, e3, e4, e5, e6)
+local function inputEventHandler(application, input, e1, e2, e3, e4, e5, e6, ...)
 	if e1 == "touch" or e1 == "drag" then
+		input:setCursorPosition(input.textCutFrom + e3 - input.x - input.textOffset)
+
 		if input.focused then
-			input:setCursorPosition(input.textCutFrom + e3 - input.x - input.textOffset)
 			inputCursorBlink(application, input, true)
 		else
 			input:startInput()
@@ -2835,6 +2871,11 @@ local function inputEventHandler(application, input, e1, e2, e3, e4, e5, e6)
 			end
 
 			inputStopInput(application, input)
+
+			if input.onKeyDown then
+				input.onKeyDown(application, input, e1, e2, e3, e4, e5, e6, ...)
+			end
+
 			return
 		-- Arrows up/down/left/right
 		elseif e4 == 200 then
@@ -2883,6 +2924,10 @@ local function inputEventHandler(application, input, e1, e2, e3, e4, e5, e6)
 				input.text = unicode.sub(input.text, 1, input.cursorPosition - 1) .. char .. unicode.sub(input.text, input.cursorPosition, -1)
 				input:setCursorPosition(input.cursorPosition + 1)
 			end
+		end
+
+		if input.onKeyDown then
+			input.onKeyDown(application, input, e1, e2, e3, e4, e5, e6, ...)
 		end
 
 		inputCursorBlink(application, input, true)
@@ -2935,12 +2980,7 @@ function GUI.input(x, y, width, height, backgroundColor, textColor, placeholderT
 	input.stopInputObject = GUI.object(1, 1, 1, 1)
 	input.stopInputObject.eventHandler = function(application, object, e1, e2, e3, e4, ...)
 		if e1 == "touch" or e1 == "drop" then
-			if 
-				e3 >= input.x and
-				e3 < input.x + input.width and
-				e4 >= input.y and
-				e4 < input.y + input.height
-			then
+			if input:isPointInside(e3, e4) then
 				input.eventHandler(application, input, e1, e2, e3, e4, ...)
 			else
 				inputStopInput(application, input)
@@ -3511,7 +3551,7 @@ local function listUpdate(list)
 		
 		-- Цвет залупы
 		if step then
-			child.colors.default = list.colors.alternating
+			child.colors.default = list.colors.alternative
 		else
 			child.colors.default = list.colors.default
 		end
@@ -3615,7 +3655,7 @@ function GUI.list(x, y, width, height, itemSize, spacing, backgroundColor, textC
 			background = backgroundColor,
 			text = textColor
 		},
-		alternating = {
+		alternative = {
 			background = backgroundAlternatingColor,
 			text = textAlternatingColor
 		},
@@ -3682,11 +3722,25 @@ end
 
 ---------------------------------------------------------------------------------------------------
 
-function GUI.highlightString(x, y, width, fromChar, indentationWidth, patterns, colorScheme, s)
+function GUI.highlightString(x, y, fromChar, indentationWidth, patterns, colorScheme, s)
+	local stringLength, x1, y1, x2, y2 = unicode.len(s), buffer.getDrawLimit()
+
 	fromChar = fromChar or 1
-	
-	local counter, symbols, colors, stringLength, bufferIndex, newFrameBackgrounds, newFrameForegrounds, newFrameSymbols, searchFrom, starting, ending = indentationWidth, {}, {}, unicode.len(s), buffer.getIndex(x, y), buffer.getNewFrameTables()
-	local toChar = math.min(stringLength, fromChar + width - 1)
+	if x < x1 then
+		fromChar = fromChar + x1 - x
+		x = x1
+	end
+
+	-- local toChar, endX = stringLength, x + stringLength - 1
+	-- if endX > x2 then
+	-- 	toChar = toChar - endX + x2
+	-- end
+	local toChar = fromChar + x2 - x
+	if toChar > stringLength then
+		toChar = stringLength
+	end
+
+	local counter, symbols, colors, bufferIndex, newFrameBackgrounds, newFrameForegrounds, newFrameSymbols, searchFrom, starting, ending = indentationWidth, {}, {}, buffer.getIndex(x, y), buffer.getNewFrameTables()
 
 	-- Пидорасим на символы
 	for i = fromChar, toChar do
@@ -3873,25 +3927,27 @@ local function dropDownMenuAddSeparator(menu)
 end
 
 local function dropDownMenuScrollDown(application, menu)
-	if menu.itemsContainer.children[1].localY < 1 then
-		for i = 1, #menu.itemsContainer.children do
-			menu.itemsContainer.children[i].localY = menu.itemsContainer.children[i].localY + 1
-		end
+	local limit, first = 1, menu.itemsContainer.children[1]
 
-		dropDownMenuReposition(menu)
-		application:draw()
+	first.localY = first.localY + menu.scrollSpeed
+	if first.localY > limit then
+		first.localY = limit
 	end
+
+	dropDownMenuReposition(menu)
+	application:draw()
 end
 
 local function dropDownMenuScrollUp(application, menu)
-	if menu.itemsContainer.children[#menu.itemsContainer.children].localY + menu.itemsContainer.children[#menu.itemsContainer.children].height - 1 > menu.height then
-		for i = 1, #menu.itemsContainer.children do
-			menu.itemsContainer.children[i].localY = menu.itemsContainer.children[i].localY - 1
-		end
+	local limit, first = -(#menu.itemsContainer.children * menu.itemHeight - menu.height - 1), menu.itemsContainer.children[1]
 
-		dropDownMenuReposition(menu)
-		application:draw()
+	first.localY = first.localY - menu.scrollSpeed
+	if first.localY < limit then
+		first.localY = limit
 	end
+
+	dropDownMenuReposition(menu)
+	application:draw()
 end
 
 local function dropDownMenuEventHandler(application, menu, e1, e2, e3, e4, e5)
@@ -3960,6 +4016,8 @@ function GUI.dropDownMenu(x, y, width, maximumHeight, itemHeight, backgroundColo
 		}
 	}
 
+	menu.scrollSpeed = 1
+
 	menu.itemsContainer = menu:addChild(GUI.container(1, 1, menu.width, menu.height))
 	menu.prevButton = menu:addChild(GUI.button(1, 1, menu.width, 1, backgroundColor, textColor, backgroundPressedColor, textPressedColor, "▲"))
 	menu.nextButton = menu:addChild(GUI.button(1, 1, menu.width, 1, backgroundColor, textColor, backgroundPressedColor, textPressedColor, "▼"))
@@ -4007,9 +4065,9 @@ local function contextMenuUpdate(menu)
 	end
 end
 
-local contextMenuCreate, contextMenuAddSubMenu
+local contextMenuCreate, contextMenuaddSubMenuItem
 
-contextMenuAddSubMenu = function(menu, text, disabled)
+contextMenuaddSubMenuItem = function(menu, text, disabled)
 	local item = menu:addItem(text, disabled, "►")
 	item.subMenu = contextMenuCreate(1, 1)
 	item.subMenu.colors = menu.colors
@@ -4035,7 +4093,7 @@ contextMenuCreate = function(x, y, backgroundColor, textColor, backgroundPressed
 	)
 
 	menu.update = contextMenuUpdate
-	menu.addSubMenu = contextMenuAddSubMenu
+	menu.addSubMenuItem = contextMenuaddSubMenuItem
 
 	return menu
 end
@@ -4171,7 +4229,7 @@ end
 
 ---------------------------------------------------------------------------------------------------
 
-function windowDraw(window)
+local function windowDraw(window)
 	containerDraw(window)
 	GUI.drawShadow(window.x, window.y, window.width, window.height, GUI.WINDOW_SHADOW_TRANSPARENCY, true)
 
@@ -4186,10 +4244,7 @@ local function windowCheck(window, x, y)
 		if
 			not child.hidden and
 			not child.disabled and
-			x >= child.x and
-			x < child.x + child.width and
-			y >= child.y and
-			y < child.y + child.height
+			child:isPointInside(x, y)
 		then
 			if not child.passScreenEvents and child.eventHandler then
 				return true
@@ -4206,64 +4261,87 @@ local function windowCheck(window, x, y)
 end
 
 local function windowEventHandler(application, window, e1, e2, e3, e4, ...)
-	if e1 == "touch" then
-		if not windowCheck(window, e3, e4) then
-			window.lastTouchX, window.lastTouchY = e3, e4
-		end
-
-		if window ~= window.parent.children[#window.parent.children] then
-			window:moveToFront()
-			
-			if window.onFocus then
-				window.onFocus(application, window, e1, e2, e3, e4, ...)
+	if window.movingEnabled then
+		if e1 == "touch" then
+			if not windowCheck(window, e3, e4) then
+				window.lastTouchX, window.lastTouchY = e3, e4
 			end
 
-			application:draw()
+			if window ~= window.parent.children[#window.parent.children] then
+				window:moveToFront()
+				
+				if window.onFocus then
+					window.onFocus(application, window, e1, e2, e3, e4, ...)
+				end
+
+				application:draw()
+			end
+		elseif e1 == "drag" and window.lastTouchX and not windowCheck(window, e3, e4) then
+			local xOffset, yOffset = e3 - window.lastTouchX, e4 - window.lastTouchY
+			if xOffset ~= 0 or yOffset ~= 0 then
+				window.localX, window.localY = window.localX + xOffset, window.localY + yOffset
+				window.lastTouchX, window.lastTouchY = e3, e4
+				
+				application:draw()
+			end
+		elseif e1 == "drop" then
+			window.lastTouchX, window.lastTouchY = nil, nil
 		end
-	elseif e1 == "drag" and window.lastTouchX and not windowCheck(window, e3, e4) then
-		local xOffset, yOffset = e3 - window.lastTouchX, e4 - window.lastTouchY
-		if xOffset ~= 0 or yOffset ~= 0 then
-			window.localX, window.localY = window.localX + xOffset, window.localY + yOffset
-			window.lastTouchX, window.lastTouchY = e3, e4
-			
-			application:draw()
-		end
-	elseif e1 == "drop" then
-		window.lastTouchX, window.lastTouchY = nil, nil
 	end
 end
 
-local function windowResize(window, width, height)
+local function windowResize(window, width, height, ignoreOnResizeFinished)
 	window.width, window.height = width, height
+	
 	if window.onResize then
 		window.onResize(width, height)
+	end
+
+	if window.onResizeFinished and not ignoreOnResizeFinished then
+		window.onResizeFinished()
 	end
 
 	return window
 end
 
-local function windowMaximize(window)
+function GUI.windowMaximize(window, animationDisabled)
+	local fromX, fromY, fromWidth, fromHeight, toX, toY, toWidth, toHeight = window.localX, window.localY, window.width, window.height
+	
 	if window.maximized then
-		window.localX, window.localY = window.oldGeometryX, window.oldGeometryY
-		window:resize(window.oldGeometryWidth, window.oldGeometryHeight)
+		toX, toY, toWidth, toHeight = window.oldGeometryX, window.oldGeometryY, window.oldGeometryWidth, window.oldGeometryHeight
+		window.oldGeometryX, window.oldGeometryY, window.oldGeometryWidth, window.oldGeometryHeight = nil, nil, nil, nil
+		window.maximized = nil
 	else
+		toX, toY, toWidth, toHeight = 1, 1, window.parent.width, window.parent.height
 		window.oldGeometryX, window.oldGeometryY, window.oldGeometryWidth, window.oldGeometryHeight = window.localX, window.localY, window.width, window.height
-		window.localX, window.localY = 1, 1
-		window:resize(window.parent.width, window.parent.height)
+		window.maximized = true
 	end
 
-	window.maximized = not window.maximized
-	window.firstParent:draw()
+	if animationDisabled then
+		window.localX, window.localY = toX, toY
+		window:resize(toWidth, toHeight)
+	else
+		window:addAnimation(
+			function(animation)
+				window.localX, window.localY =
+					math.floor(fromX + (toX - fromX) * animation.position),
+					math.floor(fromY + (toY - fromY) * animation.position)
+
+				window:resize(
+					math.floor(fromWidth + (toWidth - fromWidth) * animation.position),
+					math.floor(fromHeight + (toHeight - fromHeight) * animation.position),
+					animation.position < 1
+				)
+			end,
+			function(animation)
+				animation:remove()
+			end
+		):start(0.5)
+	end
 end
 
-local function windowMinimize(window)
+function GUI.windowMinimize(window)
 	window.hidden = not window.hidden
-	window.firstParent:draw()
-end
-
-local function windowClose(window)
-	window:remove()
-	window.firstParent:draw()
 end
 
 function GUI.window(x, y, width, height)
@@ -4272,11 +4350,11 @@ function GUI.window(x, y, width, height)
 	window.passScreenEvents = false
 
 	window.resize = windowResize
-	window.maximize = windowMaximize
-	window.minimize = windowMinimize
-	window.close = windowClose
+	window.maximize = GUI.windowMaximize
+	window.minimize = GUI.windowMinimize
 	window.eventHandler = windowEventHandler
 	window.draw = windowDraw
+	window.movingEnabled = true
 
 	return window
 end
@@ -4361,7 +4439,7 @@ local function menuContextMenuItemOnTouch(application, item)
 	application:draw()
 end
 
-local function menuAddContextMenu(menu, ...)
+local function menuAddContextMenuItem(menu, ...)
 	local item = menu:addItem(...)
 
 	item.switchMode = true
@@ -4391,7 +4469,7 @@ function GUI.menu(x, y, width, backgroundColor, textColor, backgroundPressedColo
 	}
 	
 	menu.passScreenEvents = false
-	menu.addContextMenu = menuAddContextMenu
+	menu.addContextMenuItem = menuAddContextMenuItem
 	menu.addItem = menuAddItem
 	menu.getItem = menuGetItem
 	menu.draw = menuDraw
@@ -4454,6 +4532,241 @@ function GUI.progressIndicator(x, y, passiveColor, primaryColor, secondaryColor)
 
 	return object
 end
+
+---------------------------------------------------------------------------------------------------
+
+local function tableHeaderDraw(self)
+	buffer.drawRectangle(self.x, self.y, self.width, self.height, self.parent.colors.headerBackground, self.parent.colors.headerText, " ")
+	buffer.drawText(self.x + 1, self.y, self.parent.colors.headerText, self.text)
+end
+
+local function tableAddColumn(self, headerText, sizePolicy, size)
+	layoutAddColumn(self, sizePolicy, size)
+	
+	local lastColumn = #self.columnSizes
+	
+	local header = self:setPosition(lastColumn, 1, self:addChild(GUI.object(1, 1, 1, self.itemHeight)))
+	header.text = headerText
+	header.draw = tableHeaderDraw
+
+	for row = 1, 2 do
+		self:setAlignment(lastColumn, row, GUI.ALIGNMENT_HORIZONTAL_LEFT, GUI.ALIGNMENT_VERTICAL_TOP)
+		self:setSpacing(lastColumn, row, 0)
+		self:setFitting(lastColumn, row, true, false)
+	end
+end
+
+local function tableAddRow(self, ...)
+	local objects, columnCount = {...}, #self.columnSizes
+	local index = #self.children - columnCount + 1
+	
+	if #objects == columnCount then
+		for i = #objects, 1, -1 do
+			local object = self:setPosition(i, 2, self:addChild(objects[i], index))
+
+			object.height = self.itemHeight
+			object.alternative = self.nextRowAlternative
+		end
+
+		self.nextRowAlternative = not self.nextRowAlternative
+	else
+		error("Failed to add row: count of columns ~= count of objects in row")
+	end
+end
+
+local function tableUpdateSelection(self)
+	local columnCount, row = #self.columnSizes, 1
+	
+	for i = 1, #self.children - columnCount, columnCount do
+		for j = i, i + columnCount - 1 do
+			self.children[j].selected = self.selectedRows[row]
+		end
+
+		row = row + 1
+	end
+end
+
+local function tableClear(self)
+	local columnCount, childrenCount = #self.columnSizes, #self.children
+	if childrenCount > columnCount then
+		self:removeChildren(1, childrenCount - columnCount)
+	end
+
+	self.selectedRows, self.nextRowAlternative = {}, nil
+end
+
+function GUI.tableCellEventHandler(application, self, e1, e2, e3, e4, e5, ...)
+	if e1 == "touch" or e1 == "drag" or e1 == "double_touch" then
+		local row = math.ceil(self:indexOf() / #self.parent.columnSizes)
+
+		-- Deselecting all rows
+		if (e5 == 0 or not self.parent.selectedRows[row]) and not (keyboard.isControlDown() or keyboard.isCommandDown()) then
+			self.parent.selectedRows = {}
+		end
+
+		-- Selecting this row
+		self.parent.selectedRows[row] = true
+		tableUpdateSelection(self.parent)
+
+		if self.parent.onCellTouch then
+			self.parent.onCellTouch(application, self, e1, e2, e3, e4, e5, ...)
+		end
+
+		application:draw()
+	end
+end
+
+function GUI.tableCellDraw(self)
+	local background, foreground
+	if self.selected then
+		background, foreground = self.colors.selectionBackground, self.colors.selectionText
+	elseif self.alternative then
+		background, foreground = self.colors.alternativeBackground, self.colors.alternativeText
+	else
+		background, foreground = self.colors.defaultBackground, self.colors.defaultText
+	end
+
+	if background then
+		buffer.drawRectangle(self.x, self.y, self.width, self.height,
+			background,
+			foreground,
+		" ")
+	end
+
+	return foreground
+end
+
+function GUI.tableCell(colors)
+	local cell = GUI.object(1, 1, 1, 1)
+
+	cell.colors = colors
+	cell.draw = GUI.tableCellDraw
+	cell.eventHandler = GUI.tableCellEventHandler
+
+	return cell
+end
+
+local function tableTextCellDraw(self)
+	buffer.drawText(self.x + 1, self.y, GUI.tableCellDraw(self), self.text)
+end
+
+function GUI.tableTextCell(colors, text)
+	local cell = GUI.tableCell(colors)
+
+	cell.text = text
+	cell.draw = tableTextCellDraw
+
+	return cell
+end
+
+local function tableDraw(self)
+	-- Items background
+	buffer.drawRectangle(self.x, self.y + self.itemHeight, self.width, self.height - self.itemHeight, self.colors.background, 0x0, " ")
+	-- Content
+	layoutDraw(self)
+end
+
+function GUI.tableEventHandler(application, self, e1, e2, e3, e4, e5, ...)
+	if e1 == "touch" then
+		local itemTouched = false
+		for i = 1, #self.children do
+			if self.children[i]:isPointInside(e3, e4) then
+				itemTouched = true
+				break
+			end
+		end
+
+		if not itemTouched then
+			self.onBackgroundTouch(application, self, e1, e2, e3, e4, e5, ...)
+		end
+	elseif e1 == "scroll" then
+		local columnCount = #self.columnSizes
+		local horizontalMargin, verticalMargin = self:getMargin(1, 2)
+
+		for i = 1, columnCount do
+			self:setMargin(i, 2, horizontalMargin,
+				math.max(
+					-self.itemHeight * (#self.children - columnCount) / columnCount + 1,
+					math.min(
+						0,
+						verticalMargin + e5
+					)
+				)
+			)
+		end
+
+		application:draw()
+	end
+end
+
+function GUI.table(x, y, width, height, itemHeight, backgroundColor, headerBackgroundColor, headerTextColor)
+	local table = GUI.layout(x, y, width, height, 0, 2)
+
+	table.colors = {
+		background = backgroundColor,
+		headerBackground = headerBackgroundColor,
+		headerText = headerTextColor
+	}
+
+	table.itemHeight = itemHeight
+	table.selectedRows = {}
+
+	table.addColumn = tableAddColumn
+	table.addRow = tableAddRow
+	table.clear = tableClear
+	table.draw = tableDraw
+	table.eventHandler = GUI.tableEventHandler
+
+	table:setRowHeight(1, GUI.SIZE_POLICY_ABSOLUTE, itemHeight)
+	table:setRowHeight(2, GUI.SIZE_POLICY_RELATIVE, 1.0)
+
+	return table
+end
+
+---------------------------------------------------------------------------------------------------
+
+-- local application = GUI.application()
+
+-- application:addChild(GUI.panel(1, 1, application.width, application.height, 0x2D2D2D))
+
+-- local t = application:addChild(GUI.table(3, 2, 80, 30, 1,
+-- 	0xF0F0F0,
+-- 	0xFFFFFF,
+-- 	0x000000
+-- ))
+
+-- t:addColumn("Name", GUI.SIZE_POLICY_RELATIVE, 0.6)
+-- t:addColumn("Date", GUI.SIZE_POLICY_RELATIVE, 0.4)
+-- t:addColumn("Size", GUI.SIZE_POLICY_ABSOLUTE, 16)
+-- t:addColumn("Type", GUI.SIZE_POLICY_ABSOLUTE, 10)
+
+-- local colors1 = {
+-- 	defaultBackground = nil,
+-- 	defaultText = 0x3C3C3C,
+-- 	alternativeBackground = 0xE1E1E1,
+-- 	alternativeText = 0x3C3C3C,
+-- 	selectionBackground = 0xCC2440,
+-- 	selectionText = 0xFFFFFF,
+-- }
+
+-- local colors2 = {}
+-- for key, value in pairs(colors1) do
+-- 	colors2[key] = value
+-- end
+-- colors2.defaultText, colors2.alternativeText = 0xA5A5A5, 0xA5A5A5
+
+-- for i = 1, 10 do
+-- 	t:addRow(
+-- 		GUI.tableTextCell(colors1, "Ehehehe " .. i),
+-- 		GUI.tableTextCell(colors2, "12.02.2018"),
+-- 		GUI.tableTextCell(colors2, "114.23 KB"),
+-- 		GUI.tableTextCell(colors2, ".lua")
+-- 	)
+-- end
+
+-- application:draw()
+-- application:start()
+
 
 ---------------------------------------------------------------------------------------------------
 

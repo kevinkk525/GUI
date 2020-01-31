@@ -562,4 +562,24 @@ end
 
 ----------------------------------------------------------------------------------------------------
 
+local keyboard = require("keyboard")
+
+function keyboard.isCommandDown()
+    return keyboard.pressedCodes[219]
+end
+
+----------------------------------------------------------------------------------------------------
+
+local event = require("event")
+
+-- Sleeps "time" of seconds via "busy-wait" concept
+function event.sleep(time)
+    checkArg(1, time, "number", "nil")
+    
+    local deadline = computerUptime() + (time or 0)
+    repeat
+        event.pull(deadline - computerUptime())
+    until computerUptime() >= deadline
+end
+
 return { loaded = true }
