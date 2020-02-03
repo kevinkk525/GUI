@@ -2340,7 +2340,7 @@ end
 --------------------------------------------------------------------------------
 
 local function treeDraw(tree)
-	local y, yEnd, showScrollBar = tree.y, tree.y + tree.height - 1, #tree.items > tree.height
+	local y, yEnd, showScrollBar = tree.y, tree.y + tree.height - 1, #tree.items+1 > tree.height
 	local textLimit = tree.width - (showScrollBar and 1 or 0)
 
 	if tree.colors.default.background then
@@ -2380,9 +2380,9 @@ local function treeDraw(tree)
 		scrollBar.colors.background = tree.colors.scrollBar.background
 		scrollBar.colors.foreground = tree.colors.scrollBar.foreground
 		scrollBar.minimumValue = 1
-		scrollBar.maximumValue = #tree.items-tree.height+1
-		scrollBar.value = tree.fromItem
-		scrollBar.shownValueCount = math.floor(tree.height/2)
+		scrollBar.maximumValue = #tree.items-tree.height+1+1
+		scrollBar.value = tree.fromItem-1
+		scrollBar.shownValueCount = math.floor((#tree.items-tree.height+1)/2+0.5)
 		scrollBar.onScrollValueIncrement = 1
 		scrollBar.thin = true
 
