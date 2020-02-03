@@ -2382,7 +2382,7 @@ local function treeDraw(tree)
 		scrollBar.minimumValue = 1
 		scrollBar.maximumValue = #tree.items-tree.height+1
 		scrollBar.value = tree.fromItem
-		scrollBar.shownValueCount = tree.height
+		scrollBar.shownValueCount = math.floor(tree.height/2)
 		scrollBar.onScrollValueIncrement = 1
 		scrollBar.thin = true
 
