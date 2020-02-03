@@ -2380,9 +2380,9 @@ local function treeDraw(tree)
 		scrollBar.colors.background = tree.colors.scrollBar.background
 		scrollBar.colors.foreground = tree.colors.scrollBar.foreground
 		scrollBar.minimumValue = 1
-		scrollBar.maximumValue = #tree.items
-		scrollBar.value = tree.fromItem+tree.height
-		scrollBar.shownValueCount = tree.height+1
+		scrollBar.maximumValue = #tree.items-tree.height+1
+		scrollBar.value = tree.fromItem
+		scrollBar.shownValueCount = tree.height
 		scrollBar.onScrollValueIncrement = 1
 		scrollBar.thin = true
 
@@ -2428,7 +2428,7 @@ local function treeEventHandler(workspace, tree, e1, e2, e3, e4, e5, ...)
 				end
 			end
 			if #tree.items+1>tree.height then
-				if tree.fromItem+tree.height>#tree.items+1 then
+				if tree.fromItem+tree.height>#tree.items+1+1 then
 					tree.fromItem=#tree.items+1-tree.height+1 -- +1 so that one empty line is shown
 				end
 			else
@@ -2445,7 +2445,7 @@ local function treeEventHandler(workspace, tree, e1, e2, e3, e4, e5, ...)
 			end
 		else
 			if tree.fromItem < #tree.items and tree.fromItem+tree.height < #tree.items+1+1 then
-				-- additional +1 to show 1 empty line
+				-- additional +1 in if to show 1 empty line
 				tree.fromItem = tree.fromItem + 1
 				workspace:draw()
 			end
